@@ -2,24 +2,30 @@ use sdl2::event::Event;
 use sdl2::gfx::primitives::DrawRenderer;
 use sdl2::keyboard::Keycode;
 use sdl2::pixels;
-use std::time::Duration;
-use std::thread::sleep;
-use std::iter::Sum;
-use ::bounded_vec_deque::BoundedVecDeque;
+use rand::Rng;
 
-const WIDTH: u32 = 800;
-const HEIGHT: u32 = 600;
+const WIDTH: i16 = 800;
+const HEIGHT: i16 = 600;
 const MARGIN: i16 = 20;
 
-const MARGIN_COLOR: pixels::Color = pixels::Color::RGB(255,100,100);
+const MARGIN_COLOR: pixels::Color = pixels::Color::RGB(15,15,15);
 const BG_COLOR: pixels::Color = pixels::Color::RGB(15,15,15);
 
-const TARGET_FPS: u32 = 60;
-const TARGET_INTERVAL: u32 = 1000 / TARGET_FPS;
+const RECT_SIZE: f32 = 5.;
+const RECT_SPEED: f32 = 3.;
 
 enum Action {
     Quit,
     Continue
+}
+
+struct Rect {
+    x: f32,
+    y: f32,
+    width: f32,
+    height: f32,
+    color: pixels::Color,
+    vec: [f32; 2],
 }
 
 fn handle_events(events: &mut sdl2::EventPump) -> Action {
@@ -44,35 +50,95 @@ fn handle_events(events: &mut sdl2::EventPump) -> Action {
 
 fn render_scene(
     canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,
+    rects: &mut Vec<Rect>,
     delta: u32
 ) {
+    for rect in rects.iter_mut() {
+        let mut _x: f32 = rect.x + rect.vec[0];
+        let mut _y: f32 = rect.y + rect.vec[1];
 
+        if _x + rect.width >= (WIDTH - MARGIN) as f32 {
+            _x = ((WIDTH - MARGIN) as f32) - rect.width;
+            rect.vec[0] = -rect.vec[0];
+        }
+
+        if _x <= MARGIN as f32 {
+            _x = MARGIN as f32;
+            rect.vec[0] = -rect.vec[0];
+        }
+
+        if _y + rect.height >= (HEIGHT - MARGIN) as f32 {
+            _y = ((HEIGHT - MARGIN) as f32) - rect.height;
+            rect.vec[1] = -rect.vec[1];
+        }
+
+        if _y <= MARGIN as f32 {
+            _y = MARGIN as f32;
+            rect.vec[1] = -rect.vec[1];
+        }
+
+        rect.x = _x;
+        rect.y = _y;
+
+        canvas.box_(
+            rect.x as i16,
+            rect.y as i16,
+            (rect.x + rect.width) as i16,
+            (rect.y + rect.height) as i16,
+            rect.color,
+        );
+    }
 }
 
 fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
 
     let video_subsys = sdl_context.video()?;
-    let window = video_subsys.window("rust-sdl2_gfx: draw line & FPSManager", WIDTH, HEIGHT)
+    let window = video_subsys
+        .window("ray trace", WIDTH as u32, HEIGHT as u32)
         .position_centered()
         .opengl()
         .build()
         .map_err(|e| e.to_string())?;
 
-    let mut canvas = window.into_canvas().build().map_err(|e| e.to_string())?;
+    let mut canvas = window
+        .into_canvas()
+        .present_vsync()
+        .build()
+        .map_err(|e| e.to_string())?;
 
     let mut events = sdl_context.event_pump()?;
 
     let mut timer = sdl_context.timer()?;
     let mut tick: u32 = 0;
-    let mut counter = 0;
-    let mut sleep_micro = (TARGET_INTERVAL as u64) * 1000;
 
-    let mut deltas: BoundedVecDeque<u32> = BoundedVecDeque::new(10);
+    let mut rng = rand::thread_rng();
+
+    let mut rects: Vec<Rect> = Vec::new();
+    
+    for _ in 0..500 {
+        let phi: f32 = rng.gen_range(0., 2. * std::f32::consts::PI);
+
+        let rect = Rect{
+            x: rng.gen_range(MARGIN as f32, (WIDTH - MARGIN) as f32 - 5.),
+            y: rng.gen_range(MARGIN as f32, (HEIGHT - MARGIN) as f32 - 5.),
+            width: 5.,
+            height: 5.,
+            color: pixels::Color::RGB(
+                rng.gen_range(100, 255),
+                rng.gen_range(40, 100),
+                rng.gen_range(50, 200),
+            ),
+            vec: [
+                RECT_SPEED * phi.cos(),
+                RECT_SPEED * phi.sin(),
+            ],
+        };
+
+        rects.push(rect);
+    };
 
     'main: loop {
-        counter += 1;
-
         match handle_events(&mut events) {
             Action::Quit => {
                 break 'main;
@@ -87,54 +153,19 @@ fn main() -> Result<(), String> {
         canvas.box_(
             MARGIN,
             MARGIN,
-            (WIDTH as i16) - MARGIN,
-            (HEIGHT as i16) - MARGIN,
+            WIDTH - MARGIN,
+            HEIGHT - MARGIN,
             BG_COLOR
-        );
+        )?;
 
         let now = timer.ticks();
         let delta = now - tick;
-        deltas.push_back(delta);
         tick = now;
 
         // scene
-        render_scene(&mut canvas, delta);
+        render_scene(&mut canvas, &mut rects, delta);
 
         canvas.present();
-
-        //let sleep_millis = match TARGET_INTERVAL.checked_sub(delta) {
-        //    Some(x) => x,
-        //    None => 0
-        //};
-
-        sleep(Duration::from_micros(sleep_micro));
-
-        if counter % 20 == 0 {
-            let len = deltas.len() as f32;
-
-            if len == 0.0 {
-                continue;
-            }
-
-            let sum: u32 = deltas.iter().sum();
-            let actual: f32 = sum as f32 / len;
-
-            if actual > TARGET_INTERVAL as f32 {
-                sleep_micro = match sleep_micro.checked_sub(100) {
-                    Some(x) => x,
-                    None => 0
-                };
-            } else {
-                sleep_micro += 100;
-            }
-
-            println!(
-                "fps: {}\nsleep: {}\n",
-                1000.0 / actual,
-                (sleep_micro as f32) / 1000.0
-            );
-        }
-
     }
 
     Ok(())
