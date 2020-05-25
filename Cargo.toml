@@ -2,9 +2,11 @@
 name = "raytrace"
 version = "0.1.0"
 features = ["gfx"]
+edition = "2018"
 build = "build.rs"
 
 [dependencies]
+bounded-vec-deque = "0.1.1"
 
 [dependencies.sdl2]
 version = "0.34.0"
