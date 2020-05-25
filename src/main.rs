@@ -140,7 +140,7 @@ fn main() -> Result<(), String> {
         rects.push(rect);
     };
 
-    gfx::hello();
+    gfx::camera::hello();
 
     'main: loop {
         match handle_events(&mut events) {
