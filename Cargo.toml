@@ -1,7 +1,12 @@
 [package]
 name = "raytrace"
 version = "0.1.0"
+features = ["gfx"]
 build = "build.rs"
 
 [dependencies]
-sdl2 = "0.34.0"
+
+[dependencies.sdl2]
+version = "0.34.0"
+default-features = false
+features = ["gfx"]
