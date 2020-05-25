@@ -4,6 +4,8 @@ use sdl2::keyboard::Keycode;
 use sdl2::pixels;
 use rand::Rng;
 
+mod gfx;
+
 const WIDTH: i16 = 800;
 const HEIGHT: i16 = 600;
 const MARGIN: i16 = 20;
@@ -116,7 +118,7 @@ fn main() -> Result<(), String> {
 
     let mut rects: Vec<Rect> = Vec::new();
     
-    for _ in 0..500 {
+    for _ in 0..1000 {
         let phi: f32 = rng.gen_range(0., 2. * std::f32::consts::PI);
 
         let rect = Rect{
@@ -125,9 +127,9 @@ fn main() -> Result<(), String> {
             width: 5.,
             height: 5.,
             color: pixels::Color::RGB(
-                rng.gen_range(100, 255),
-                rng.gen_range(40, 100),
-                rng.gen_range(50, 200),
+                rng.gen_range(150, 250),
+                rng.gen_range(130, 230),
+                rng.gen_range(90, 190),
             ),
             vec: [
                 RECT_SPEED * phi.cos(),
@@ -137,6 +139,8 @@ fn main() -> Result<(), String> {
 
         rects.push(rect);
     };
+
+    gfx::hello();
 
     'main: loop {
         match handle_events(&mut events) {

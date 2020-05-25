@@ -7,8 +7,12 @@ build = "build.rs"
 
 [dependencies]
 rand = "0.7.3"
+gl = "0.14.0"
 
 [dependencies.sdl2]
 version = "0.34.0"
 default-features = false
 features = ["gfx"]
+
+[[example]]
+name = "ogl"
