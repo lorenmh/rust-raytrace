@@ -23,3 +23,8 @@ Ideas so far:
 * something like "pikman", ie, some form of automata that the user interacts with, more "guiding" than "controlling" the automata
   - ex: https://www.youtube.com/watch?v=bqtqltqcQhw : these "boids", only have 3 rules (avoid colliding with boids, attempt to steer in a similar direction of other boids, attempt to move towards center mass of boids). A set of simple rules which dont require complex textures / crazy art assets.
 * some kind of "train track utilitarian" game, where there's a runaway train and the user quickly change tracks before the train crashes or collides with pedestrians; a "frogger" if you will, except we're the train operator, not the frogs.
+
+## TODO:
+1. Simple "Hello Shader" program, which displays a single triangle, with vertex shader (x -> x) and a fragment shader that outputs red pixels within triangle
+1. Simple "Hello Polyhedron" program, which displays a polyhedren with perspective projection
+1. Get a better idea of the overall structure here
