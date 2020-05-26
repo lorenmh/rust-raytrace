@@ -24,7 +24,11 @@ Ideas so far:
   - ex: https://www.youtube.com/watch?v=bqtqltqcQhw : these "boids", only have 3 rules (avoid colliding with boids, attempt to steer in a similar direction of other boids, attempt to move towards center mass of boids). A set of simple rules which dont require complex textures / crazy art assets.
 * some kind of "train track utilitarian" game, where there's a runaway train and the user quickly change tracks before the train crashes or collides with pedestrians; a "frogger" if you will, except we're the train operator, not the frogs.
 
-## TODO:
+## To Do
 1. Simple "Hello Shader" program, which displays a single triangle, with vertex shader (x -> x) and a fragment shader that outputs red pixels within triangle
 1. Simple "Hello Polyhedron" program, which displays a polyhedren with perspective projection
 1. Get a better idea of the overall structure here
+
+## Links
+* [Learn GFX HAL](https://rust-tutorials.github.io/learn-gfx-hal/01_introduction.html)
+* [The Rust Book](https://doc.rust-lang.org/book/)
