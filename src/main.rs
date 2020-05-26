@@ -10,9 +10,6 @@ const WIDTH: i16 = 800;
 const HEIGHT: i16 = 600;
 const MARGIN: i16 = 20;
 
-const MARGIN_COLOR: pixels::Color = pixels::Color::RGB(15,15,15);
-const BG_COLOR: pixels::Color = pixels::Color::RGB(15,15,15);
-
 const RECT_SIZE: f32 = 5.;
 const RECT_SPEED: f32 = 3.;
 
@@ -93,6 +90,9 @@ fn render_scene(
 }
 
 fn main() -> Result<(), String> {
+    let MARGIN_COLOR: pixels::Color = pixels::Color::RGB(15,15,15);
+    let BG_COLOR: pixels::Color = pixels::Color::RGB(15,15,15);
+
     let sdl_context = sdl2::init()?;
 
     let video_subsys = sdl_context.video()?;

@@ -11,7 +11,7 @@ fn main() {
 
     let gl_attr = video_subsystem.gl_attr();
     gl_attr.set_context_profile(GLProfile::Core);
-    gl_attr.set_context_version(3, 3);
+    gl_attr.set_context_version(4, 1);
 
     let window = video_subsystem.window("Window", 800, 600)
         .opengl()
@@ -23,7 +23,10 @@ fn main() {
     gl::load_with(|name| video_subsystem.gl_get_proc_address(name) as *const _);
 
     debug_assert_eq!(gl_attr.context_profile(), GLProfile::Core);
-    debug_assert_eq!(gl_attr.context_version(), (3, 3));
+    debug_assert_eq!(gl_attr.context_version(), (4, 1));
+
+    println!("{:?}", gl_attr.context_profile());
+    println!("{:?}", gl_attr.context_version());
 
     let mut event_pump = sdl_context.event_pump().unwrap();
 
