@@ -8,13 +8,17 @@ pub type Mesh = std::vec::Vec<Triangle>;
 pub type Color = [u8; 3];
 
 trait Render {
-    fn position() -> na::Point3<f32>;
-    fn rotation() -> na::Vector3<f32>;
-    fn mesh() -> Mesh;
-    fn color() -> Color;
+    fn position(&self) -> na::Vector3<f32>;
+    fn rotation(&self) -> na::Vector3<f32>;
+    fn mesh(&self) -> Mesh;
+    fn color(&self) -> Color;
 
-    fn transform(&self) -> na::Matrix4<f32> {
-        self.transform()
+    fn mat_translation(&self) -> na::Matrix3<f32> {
+        na::Matrix3::from_diagonal(&self.position())
+    }
+
+    fn mat_rotation(&self) -> na::Matrix4<f32> {
+        na::Matrix4::new_rotation(self.rotation())
     }
 }
 
