@@ -2,6 +2,7 @@ use nalgebra as na;
 
 pub mod camera;
 pub mod object;
+pub mod shader;
 
 pub type Triangle = [na::Point3<f32>; 3];
 pub type Mesh = std::vec::Vec<Triangle>;

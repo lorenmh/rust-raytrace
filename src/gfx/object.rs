@@ -1,6 +1,6 @@
 use nalgebra as na;
 
-struct Object {
+pub struct Object {
     pos: na::Point3<f32>,
     vel: na::Vector3<f32>,
     rot: na::Vector3<f32>,

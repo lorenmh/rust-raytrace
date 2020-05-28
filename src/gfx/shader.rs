@@ -1,0 +1,40 @@
+use gl;
+use std::ffi::CString;
+use gl::types::{GLchar, GLint, GLuint};
+
+fn attach_program() {}
+
+type shader_program = GLuint;
+
+#[repr(u32)]
+enum Type {
+    Vertex = gl::VERTEX_SHADER,
+    Fragment = gl::FRAGMENT_SHADER,
+}
+
+fn compile_shader(glsl: &str, typ: Type) -> Result<shader_program, std::string::String> {
+    let program;
+
+    unsafe {
+        program = gl::CreateShader(typ as GLuint);
+        let c_str = CString::new(glsl).expect("couldnt convert to c-string");
+        gl::ShaderSource(program, 1, &c_str.as_ptr(), std::ptr::null());
+        gl::CompileShader(program);
+
+        let mut status = gl::FALSE as GLint;
+        gl::GetShaderiv(program, gl::COMPILE_STATUS, &mut status);
+
+        if status != (gl::TRUE as GLint) {
+            let mut len = 0;
+            gl::GetShaderiv(program, gl::INFO_LOG_LENGTH, &mut len);
+            let mut buf = Vec::new();
+            buf.set_len((len as usize) - 1); // subtract 1 to skip the trailing null character
+            gl::GetShaderInfoLog(program, len, std::ptr::null_mut(), buf.as_mut_ptr() as *mut GLchar);
+            let s = std::str::from_utf8(buf.as_slice()).ok().expect("ShaderInfoLog not valid utf8");
+            return Err(s.to_string());
+        }
+    }
+    Ok(program)
+}
+
+//pub fn compile_shader()

@@ -4,10 +4,7 @@ Playground for Rust; hoping to build out something graphical, perhaps a ray trac
 ## How
 * SDL2 via the `sdl2` crate will provide window / OS independent media layer.
   - provides key input, windows, openGL context, etc
-* `gfs-rs/gfx` will provide a Vulkan-esque graphics library API to stream data to GPU
-* `gfx_window_sdl` is used to with the `gfx` "hardware abstraction layer" (HAL) to allow `gfx` to be used
-  - should allow the creation of shader programs, streaming of data to GPU for processing
-  - is currently pinned to `0.32.0` of SDL2, should maybe look into vendoring? 
+* use 
   
 ## What
 ### raytracer
@@ -34,5 +31,6 @@ Ideas so far:
 1. Get a better idea of the overall structure here
 
 ## Links
-* [Learn GFX HAL](https://rust-tutorials.github.io/learn-gfx-hal/01_introduction.html)
+* ~[Learn GFX HAL](https://rust-tutorials.github.io/learn-gfx-hal/01_introduction.html)~
 * [The Rust Book](https://doc.rust-lang.org/book/)
+* [gl-rs example](https://gist.github.com/simias/c140d1479ada4d6218c0)
