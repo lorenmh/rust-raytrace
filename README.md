@@ -24,6 +24,9 @@ Ideas so far:
 ## Notes
 
 ## To Do
+1. Read through the LearnOpenGL book
+1. Better error handling (I assume GLSL compile error breaks code, just get a random SIGSEV error; make sure to handle errors)
+1. Move all unsafe code to module
 1. Figure out how matrices are generated
   - shader can generate transform matrices, however, does it generate a new matrix for each input vertex? if so, create using `nalgebra`
 1. Simple "Hello Shader" program, which displays a single triangle, with vertex shader (x -> x) and a fragment shader that outputs red pixels within triangle
