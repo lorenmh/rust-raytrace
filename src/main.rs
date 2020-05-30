@@ -33,20 +33,6 @@ static VERTEX_DATA: [GLfloat; 6] = [
     -0.5, -0.5
 ];
 
-static VS_SRC: &'static str =
-    "#version 150\n\
-    in vec2 position;\n\
-    void main() {\n\
-    gl_Position = vec4(position, 0.0, 1.0);\n\
-    }";
-
-static FS_SRC: &'static str =
-    "#version 150\n\
-    out vec4 out_color;\n\
-    void main() {\n\
-       out_color = vec4(1.0, 1.0, 1.0, 1.0);\n\
-    }";
-
 fn handle_events(events: &mut sdl2::EventPump) -> Action {
     for event in events.poll_iter() {
 
@@ -97,8 +83,11 @@ fn main() -> Result<(), String> {
 
     let mut objects: Vec<gfx::object::Object> = Vec::new();
 
-    let vs = gfx::shader::compile_shader(VS_SRC, gfx::shader::Type::Vertex)?;
-    let fs = gfx::shader::compile_shader(FS_SRC, gfx::shader::Type::Fragment)?;
+    let vs_src = include_str!("shaders/vertex.glsl");
+    let fs_src = include_str!("shaders/fragment.glsl");
+
+    let vs = gfx::shader::compile_shader(vs_src, gfx::shader::Type::Vertex)?;
+    let fs = gfx::shader::compile_shader(fs_src, gfx::shader::Type::Fragment)?;
 
     let program = gfx::shader::link_program(vs, fs)?;
 
