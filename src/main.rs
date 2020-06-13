@@ -11,6 +11,10 @@ use std::convert::TryFrom;
 
 mod gfx;
 
+// traits
+use gfx::Render;
+use std::string::ToString;
+
 const WIDTH: i16 = 800;
 const HEIGHT: i16 = 600;
 
@@ -83,6 +87,10 @@ fn main() -> Result<(), String> {
     let mut _rng = rand::thread_rng();
 
     let mut objects: Vec<gfx::object::Object> = Vec::new();
+    let rect = gfx::rectangle::new(0.0, 0.0, 0.7, 0.35, [255, 155, 155]);
+    println!("{}", rect);
+    println!("{:?}", rect.vertices());
+    println!("{:?}", rect.transformation());
 
     let vs_src = include_str!("shaders/vertex.glsl");
     let fs_src = include_str!("shaders/fragment.glsl");
