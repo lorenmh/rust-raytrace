@@ -1,8 +1,11 @@
-#version 150
+#version 330
 
-in vec4 gl_FragCoord;
-out vec4 out_color;
+out vec4 FragColor;
+
+in vec3 color;
+
+uniform float clock;
 
 void main() {
-   out_color = vec4(gl_FragCoord.x, gl_FragCoord.y, 0.0, 1.0);
+   FragColor = vec4(color.x * clock, color.y * clock, color.z * clock, 1.0);
 }

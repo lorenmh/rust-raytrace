@@ -6,7 +6,7 @@ use rand::Rng;
 use sdl2::video::GLProfile;
 use std::ffi::CString;
 use gl;
-use gl::types::{GLfloat, GLsizeiptr, GLuint, GLboolean};
+use gl::types::{GLfloat, GLsizeiptr, GLuint, GLint, GLboolean, GLvoid};
 
 mod gfx;
 
@@ -27,10 +27,10 @@ struct Rect {
     vec: [f32; 2],
 }
 
-static VERTEX_DATA: [GLfloat; 6] = [
-    0.0,  0.5,
-    0.5, -0.5,
-    -0.5, -0.5
+static VERTEX_DATA: [GLfloat; 15] = [
+    0.0,  0.5,      1.0, 0.0, 0.0,
+    0.5, -0.5,      0.0, 1.0, 0.0,
+    -0.5, -0.5,     0.0, 0.0, 1.0,
 ];
 
 fn handle_events(events: &mut sdl2::EventPump) -> Action {
@@ -94,6 +94,7 @@ fn main() -> Result<(), String> {
     let mut vao = 0;
     let mut vbo = 0;
 
+    let mut uniformClock: GLint;
     unsafe {
         // Create Vertex Array Object
         gl::GenVertexArrays(1, &mut vao);
@@ -108,16 +109,49 @@ fn main() -> Result<(), String> {
                        gl::STATIC_DRAW);
 
         // Use shader program
+        let uniformClockID = CString::new("clock").expect("CString::new failed");
         gl::UseProgram(program);
-        let id1 = CString::new("out_color").expect("foop");
-        gl::BindFragDataLocation(program, 0, id1.as_ptr());
+        uniformClock = gl::GetUniformLocation(program, uniformClockID.as_ptr());
+
+        let fragDataID = CString::new("FragColor").expect("CString:new failed");
+        gl::BindFragDataLocation(program, 0, fragDataID.as_ptr());
 
         // Specify the layout of the vertex data
-        let id2 = CString::new("position").expect("boop");
-        let pos_attr = gl::GetAttribLocation(program, id2.as_ptr());
+        let attribPositionID = CString::new("attribPosition").expect("CString:new failed");
+        let attribColorID = CString::new("attribColor").expect("CString:new failed");
 
-        gl::EnableVertexAttribArray(pos_attr as GLuint);
-        gl::VertexAttribPointer(pos_attr as GLuint, 2, gl::FLOAT, gl::FALSE as GLboolean, 0, std::ptr::null());
+        //let attribPosition = gl::GetAttribLocation(program, attribPositionID.as_ptr());
+        //let attribColor = gl::GetAttribLocation(program, attribColorID.as_ptr());
+
+        const offset1: usize = 0 * std::mem::size_of::<GLfloat>();
+        const offset2: usize = 2 * std::mem::size_of::<GLfloat>();
+
+        gl::VertexAttribPointer(
+            //attribPosition as GLuint,
+            0,
+            2,
+            gl::FLOAT,
+            gl::FALSE as GLboolean,
+            (5 * std::mem::size_of::<GLfloat>()) as i32,
+            offset1 as *const GLvoid,
+        );
+
+        //let offsetPtr: *mut std::ffi::c_void = &mut offset as *mut _ as *mut std::ffi::c_void;
+        gl::VertexAttribPointer(
+            //attribColor as GLuint,
+            1,
+            3,
+            gl::FLOAT,
+            gl::FALSE as GLboolean,
+            (5 * std::mem::size_of::<GLfloat>()) as i32,
+            offset2 as *const GLvoid,
+        );
+
+        //gl::EnableVertexAttribArray(attribPosition as GLuint);
+        //gl::EnableVertexAttribArray(attribPosition as GLuint);
+        gl::EnableVertexAttribArray(0 as GLuint);
+        gl::EnableVertexAttribArray(1 as GLuint);
+
     }
 
     'main: loop {
@@ -138,6 +172,8 @@ fn main() -> Result<(), String> {
         tick = now;
 
         unsafe {
+            let clock = 0.8 + (timer.ticks() as f32 / 100.0).sin() / 10.0;
+            gl::Uniform1f(uniformClock, clock);
             gl::DrawArrays(gl::TRIANGLES, 0, 3);
         }
 
