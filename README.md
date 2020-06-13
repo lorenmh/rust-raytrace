@@ -37,3 +37,4 @@ Ideas so far:
 * ~[Learn GFX HAL](https://rust-tutorials.github.io/learn-gfx-hal/01_introduction.html)~
 * [The Rust Book](https://doc.rust-lang.org/book/)
 * [gl-rs example](https://gist.github.com/simias/c140d1479ada4d6218c0)
+* [storage buf example](https://www.geeks3d.com/20140704/tutorial-introduction-to-opengl-4-3-shader-storage-buffers-objects-ssbo-demo/)
