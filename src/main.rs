@@ -120,37 +120,30 @@ fn main() -> Result<(), String> {
         let attribPositionID = CString::new("attribPosition").expect("CString:new failed");
         let attribColorID = CString::new("attribColor").expect("CString:new failed");
 
-        //let attribPosition = gl::GetAttribLocation(program, attribPositionID.as_ptr());
-        //let attribColor = gl::GetAttribLocation(program, attribColorID.as_ptr());
-
-        const offset1: usize = 0 * std::mem::size_of::<GLfloat>();
-        const offset2: usize = 2 * std::mem::size_of::<GLfloat>();
+        let attribPosition = gl::GetAttribLocation(program, attribPositionID.as_ptr());
+        let attribColor = gl::GetAttribLocation(program, attribColorID.as_ptr());
 
         gl::VertexAttribPointer(
-            //attribPosition as GLuint,
-            0,
+            attribPosition as GLuint,
             2,
             gl::FLOAT,
             gl::FALSE as GLboolean,
-            (5 * std::mem::size_of::<GLfloat>()) as i32,
-            offset1 as *const GLvoid,
+            (5 * std::mem::size_of::<GLfloat>()) as GLint,
+            (0 * std::mem::size_of::<GLfloat>()) as *const GLvoid,
         );
 
         //let offsetPtr: *mut std::ffi::c_void = &mut offset as *mut _ as *mut std::ffi::c_void;
         gl::VertexAttribPointer(
-            //attribColor as GLuint,
-            1,
+            attribColor as GLuint,
             3,
             gl::FLOAT,
             gl::FALSE as GLboolean,
-            (5 * std::mem::size_of::<GLfloat>()) as i32,
-            offset2 as *const GLvoid,
+            (5 * std::mem::size_of::<GLfloat>()) as GLint,
+            (2 * std::mem::size_of::<GLfloat>()) as *const GLvoid,
         );
 
-        //gl::EnableVertexAttribArray(attribPosition as GLuint);
-        //gl::EnableVertexAttribArray(attribPosition as GLuint);
-        gl::EnableVertexAttribArray(0 as GLuint);
-        gl::EnableVertexAttribArray(1 as GLuint);
+        gl::EnableVertexAttribArray(attribPosition as GLuint);
+        gl::EnableVertexAttribArray(attribColor as GLuint);
 
     }
 

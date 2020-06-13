@@ -1,7 +1,7 @@
 #version 330
 
-layout (location = 0) in vec2 attribPosition;
-layout (location = 1) in vec3 attribColor;
+in vec2 attribPosition;
+in vec3 attribColor;
 
 out vec3 color;
 
