@@ -104,6 +104,7 @@ fn main() -> Result<(), String> {
         let delta = now - tick;
         tick = now;
 
+
         unsafe {
             gl::ClearColor(0.2, 0.2, 0.2, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT);
@@ -113,6 +114,10 @@ fn main() -> Result<(), String> {
             rect0.render(program, clock, width, height);
             rect1.render(program, clock, width, height);
             rect2.render(program, clock, width, height);
+
+            rect0.rot += na::Vector3::new(0.0, 0.0, std::f32::consts::PI / 200.0);
+            rect1.rot += na::Vector3::new(0.0, 0.0, -std::f32::consts::PI / 300.0);
+            rect2.pos = na::Vector3::new(f32::sin(timer.ticks() as f32 / 200.0), 0.0, 0.0);
         }
 
         window.gl_swap_window();

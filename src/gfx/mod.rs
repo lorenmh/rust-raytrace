@@ -17,7 +17,7 @@ pub trait Render {
     fn rotation(&self) -> na::Vector3<f32>;
     fn scale(&self) -> f32;
     fn mesh(&self) -> &Mesh;
-    fn color(&self) -> Color;
+    fn color(&self) -> fn(i32) -> [f32; 3];
 
     fn render(&self, program: shader::Program, clock: f32, width: i32, height: i32) -> Result<(), std::string::String> {
         let v = self.vertices();
@@ -98,15 +98,11 @@ pub trait Render {
 
         let a = self.mesh();
 
-        let color = self.color();
-        let c: Vec<GLfloat> = vec![
-            (color[0] as GLfloat) / 255.0,
-            (color[1] as GLfloat) / 255.0,
-            (color[2] as GLfloat) / 255.0,
-        ];
+        let colorFn = self.color();
 
         // iterate over triangles
-        for &t in self.mesh() {
+        let mut counter: i32 = 0;
+        for  &t in self.mesh() {
 
             // iterate over points in triangles
             for &p in &t {
@@ -116,8 +112,15 @@ pub trait Render {
                     p.z as GLfloat,
                 ]);
 
+                let color = colorFn(counter);
                 // interleaved vertex and color
-                v.extend(&c);
+                v.extend(vec![
+                    color[0] as GLfloat,
+                    color[1] as GLfloat,
+                    color[2] as GLfloat,
+                ]);
+
+                counter += 1;
             }
         }
 

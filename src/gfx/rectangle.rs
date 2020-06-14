@@ -14,12 +14,19 @@ pub fn new(x: f32, y: f32, width: f32, height: f32, color: crate::gfx::Color) ->
         ]
     ];
 
+    let colorFn: fn(i32) -> [f32; 3] = |i| {
+        if (i / 3) == 0 {
+           return [0.2, 0.2, 0.7];
+        }
+        return [0.7, 0.3, 0.3];
+    };
+
     crate::gfx::object::Object {
         pos: na::Vector3::new(  x,   y, 0.0),
         vel: na::Vector3::new(0.0, 0.0, 0.0),
         rot: na::Vector3::new(0.0, 0.0, 0.0),
         scale: 1.0,
+        color: colorFn,
         mesh,
-        color,
     }
 }

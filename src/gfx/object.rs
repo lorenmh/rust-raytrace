@@ -14,7 +14,7 @@ pub struct Object {
 
     // TODO: move the mesh / color data to own modules
     pub mesh: crate::gfx::Mesh,
-    pub color: crate::gfx::Color,
+    pub color: fn(i32) -> [f32; 3],
 }
 
 impl Object {
@@ -51,5 +51,5 @@ impl crate::gfx::Render for Object {
     fn rotation(&self) -> na::Vector3<f32> { self.rot.clone() }
     fn scale(&self) -> f32 { self.scale }
     fn mesh(&self) -> &crate::gfx::Mesh{ &self.mesh }
-    fn color(&self) -> crate::gfx::Color{ self.color.clone() }
+    fn color(&self) -> fn(i32) -> [f32; 3] { self.color }
 }
