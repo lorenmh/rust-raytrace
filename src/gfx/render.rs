@@ -22,12 +22,15 @@ pub trait Renderable {
         let mut vbo = 0;
 
         let aspect_ratio = params.width as f32 / params.height as f32;
-        println!("aspect {}", aspect_ratio);
 
-        let camera = na::Matrix4::new_perspective(aspect_ratio, std::f32::consts::PI / 6.0, 1.0, -1.0);
+        let camera = na::Matrix4::new_perspective(aspect_ratio, std::f32::consts::PI / 2.0, 1.0, -1.0);
+
+        //let mut o = crate::gfx::object::Object{
+        //    pos: 0
+        //}
 
         let c = na::Matrix4::look_at_rh(
-            &na::Point3::new(-20.0, 20.0, 40.0),
+            &na::Point3::new(params.clock.sin() * 40.0, 10.0, params.clock.cos() * 40.0),
             &na::Point3::new(0.0, 0.0, 0.0),
             &na::Vector3::new(0.0, 1.0, 0.0),
         );

@@ -52,6 +52,8 @@ fn main() -> Result<(), String> {
     let gl_attr = video_subsys.gl_attr();
     gl_attr.set_context_profile(GLProfile::Core);
     gl_attr.set_context_version(4, 1);
+    gl_attr.set_multisample_buffers(1);
+    gl_attr.set_multisample_samples(16);
 
     let window = video_subsys
         .window("gfx", WIDTH as u32, HEIGHT as u32)
@@ -70,38 +72,73 @@ fn main() -> Result<(), String> {
 
     let mut _rng = rand::thread_rng();
 
-    let mut red = gfx::rectangle::new(
+    let red: fn(i32) -> gfx::Color = |i| { [1.0, 0.2, 0.2] };
+    let green: fn(i32) -> gfx::Color = |i| { [0.2, 0.8, 0.2] };
+    let blue: fn(i32) -> gfx::Color = |i| { [0.2, 0.2, 1.0] };
+
+    let mut f1 = gfx::rectangle::new(
         0.0,
         0.0,
         5.0,
-        4.0,
-        2.0,
-        |i| { [1.0, 0.2, 0.2] },
+        10.0,
+        10.0,
+        red,
     );
 
-    let mut green = gfx::rectangle::new(
+    let mut f2 = gfx::rectangle::new(
+        -5.0,
         0.0,
+        0.0,
+        10.0,
+        10.0,
+        green,
+    );
+    f2.obj.rot.y = std::f32::consts::PI / 2.0;
+
+    let mut f3 = gfx::rectangle::new(
         0.0,
         5.0,
-        4.0,
-        2.0,
-        |i| { [0.2, 0.8, 0.2] },
+        0.0,
+        10.0,
+        10.0,
+        blue,
+    );
+    f3.obj.rot.x = std::f32::consts::PI / 2.0;
+
+    let mut f4 = gfx::rectangle::new(
+        0.0,
+        0.0,
+        -5.0,
+        10.0,
+        10.0,
+        red,
     );
 
-    let mut blue = gfx::rectangle::new(
-        0.0,
-        0.0,
+    let mut f5 = gfx::rectangle::new(
         5.0,
-        4.0,
-        2.0,
-        |i| { [0.2, 0.2, 1.0] },
+        0.0,
+        0.0,
+        10.0,
+        10.0,
+        green,
     );
+    f5.obj.rot.y = std::f32::consts::PI / 2.0;
+
+    let mut f6 = gfx::rectangle::new(
+        0.0,
+        -5.0,
+        0.0,
+        10.0,
+        10.0,
+        blue,
+    );
+    f6.obj.rot.x = std::f32::consts::PI / 2.0;
 
     let x = gfx::rectangle::new(
         0.0,
         0.0,
         0.0,
-        50.0,
+        1000.0,
         0.2,
         |i| { [1.0, 0.0, 0.0] },
     );
@@ -111,7 +148,7 @@ fn main() -> Result<(), String> {
         0.0,
         0.0,
         0.2,
-        50.0,
+        1000.0,
         |i| { [0.0, 1.0, 0.0] },
     );
 
@@ -120,7 +157,7 @@ fn main() -> Result<(), String> {
         0.0,
         0.0,
         0.2,
-        50.0,
+        1000.0,
         |i| { [0.0, 0.0, 1.0] },
     );
     z.obj.rot.x = std::f32::consts::PI / 2.0;
@@ -140,6 +177,10 @@ fn main() -> Result<(), String> {
 
     unsafe {
         gl::Enable(gl::DEPTH_TEST);
+        gl::Enable(gl::MULTISAMPLE);
+        //gl::Enable(gl::POLYGON_SMOOTH);
+        //gl::Enable(gl::BLEND) ;
+        //gl::BlendFunc(gl::SRC_ALPHA_SATURATE, gl::ONE) ;
         //gl::DepthFunc(gl::ALWAYS);
     }
 
@@ -161,27 +202,25 @@ fn main() -> Result<(), String> {
             //gl::Clear(gl::COLOR_BUFFER_BIT);// | gl::DEPTH_BUFFER_BIT);
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
-            let clock = (timer.ticks() as f32 / 1000.0).sin();
+            let clock = timer.ticks() as f32 / 1000.0;
 
             let params = gfx::render::Params{
                 program, clock, width, height
             };
 
-            red.render(&params);
-            green.render(&params);
-            blue.render(&params);
-
             x.render(&params);
             y.render(&params);
             z.render(&params);
 
-            //red.obj.pos.x = f32::sin(timer.ticks() as f32 / 1000.0) / 20.0;
-            //green.obj.pos.y = f32::sin(timer.ticks() as f32 / 1000.0) / 20.0;
-            //blue.obj.pos.z = f32::sin(timer.ticks() as f32 / 1000.0) / 20.0;
+            f1.render(&params);
+            f2.render(&params);
+            f3.render(&params);
+            f4.render(&params);
+            f5.render(&params);
+            f6.render(&params);
 
-            red.obj.rot.x = timer.ticks() as f32 / 1000.0;
-            green.obj.rot.x = timer.ticks() as f32 / 1000.0 + 2.0 * std::f32::consts::PI / 3.0;
-            blue.obj.rot.x = timer.ticks() as f32 / 1000.0 + 4.0 * std::f32::consts::PI / 3.0;
+            //let mut rects = vec![&mut red, &mut green, &mut blue];
+
         }
 
         window.gl_swap_window();
