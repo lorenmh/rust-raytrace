@@ -38,3 +38,4 @@ Ideas so far:
 * [The Rust Book](https://doc.rust-lang.org/book/)
 * [storage buf example](https://www.geeks3d.com/20140704/tutorial-introduction-to-opengl-4-3-shader-storage-buffers-objects-ssbo-demo/)
 * [objectified](https://www.tomdalling.com/blog/modern-opengl/05-model-assets-and-instances/)
+* [storage buf history](https://github.com/lorenmh/rust-raytrace/blob/159ebbf2522af974c9828b71b8909e909e74037f/src/main.rs#L132-L139)
