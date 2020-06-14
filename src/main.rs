@@ -196,17 +196,22 @@ fn main() -> Result<(), String> {
     }
 
     'main: loop {
-        match handle_events(&mut events) {
-            Action::Quit => {
-                break 'main;
-            }
-            Action::Continue => {}
-        }
-
         let now = timer.ticks();
         let delta = now - tick;
         tick = now;
 
+        match handle_events(&mut events) {
+            Action::Quit => {
+                break 'main;
+            }
+            Action::Up => {
+                camera.obj.pos.y += 1.0;
+            }
+            Action::Down => {
+                camera.obj.pos.y -= 1.0;
+            }
+            Action::Continue => {}
+        }
 
         unsafe {
             gl::ClearColor(0.05, 0.05, 0.1, 1.0);
