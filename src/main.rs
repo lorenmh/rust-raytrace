@@ -73,29 +73,57 @@ fn main() -> Result<(), String> {
     let mut red = gfx::rectangle::new(
         0.0,
         0.0,
-        0.0,
-        0.4,
-        0.2,
+        5.0,
+        4.0,
+        2.0,
         |i| { [1.0, 0.2, 0.2] },
     );
 
     let mut green = gfx::rectangle::new(
         0.0,
         0.0,
-        0.0,
-        0.4,
-        0.2,
+        5.0,
+        4.0,
+        2.0,
         |i| { [0.2, 0.8, 0.2] },
     );
 
     let mut blue = gfx::rectangle::new(
         0.0,
         0.0,
-        0.0,
-        0.4,
-        0.2,
+        5.0,
+        4.0,
+        2.0,
         |i| { [0.2, 0.2, 1.0] },
     );
+
+    let x = gfx::rectangle::new(
+        0.0,
+        0.0,
+        0.0,
+        50.0,
+        0.2,
+        |i| { [1.0, 0.0, 0.0] },
+    );
+
+    let y = gfx::rectangle::new(
+        0.0,
+        0.0,
+        0.0,
+        0.2,
+        50.0,
+        |i| { [0.0, 1.0, 0.0] },
+    );
+
+    let mut z = gfx::rectangle::new(
+        0.0,
+        0.0,
+        0.0,
+        0.2,
+        50.0,
+        |i| { [0.0, 0.0, 1.0] },
+    );
+    z.obj.rot.x = std::f32::consts::PI / 2.0;
 
     let vs_src = include_str!("shaders/vertex.glsl");
     let fs_src = include_str!("shaders/fragment.glsl");
@@ -143,9 +171,13 @@ fn main() -> Result<(), String> {
             green.render(&params);
             blue.render(&params);
 
-            red.obj.pos.x = f32::sin(timer.ticks() as f32 / 1000.0);
-            green.obj.pos.y = f32::sin(timer.ticks() as f32 / 1000.0);
-            blue.obj.pos.z = f32::sin(timer.ticks() as f32 / 1000.0);
+            x.render(&params);
+            y.render(&params);
+            z.render(&params);
+
+            //red.obj.pos.x = f32::sin(timer.ticks() as f32 / 1000.0) / 20.0;
+            //green.obj.pos.y = f32::sin(timer.ticks() as f32 / 1000.0) / 20.0;
+            //blue.obj.pos.z = f32::sin(timer.ticks() as f32 / 1000.0) / 20.0;
 
             red.obj.rot.x = timer.ticks() as f32 / 1000.0;
             green.obj.rot.x = timer.ticks() as f32 / 1000.0 + 2.0 * std::f32::consts::PI / 3.0;
