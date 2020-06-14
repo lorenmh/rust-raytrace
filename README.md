@@ -1,6 +1,8 @@
 # rust-raytrace
 Playground for Rust; hoping to build out something graphical, perhaps a ray tracer
 
+## cleanup warnings
+
 ## How
 * SDL2 via the `sdl2` crate will provide window / OS independent media layer.
   - provides key input, windows, openGL context, etc
@@ -38,3 +40,4 @@ Ideas so far:
 * [The Rust Book](https://doc.rust-lang.org/book/)
 * [gl-rs example](https://gist.github.com/simias/c140d1479ada4d6218c0)
 * [storage buf example](https://www.geeks3d.com/20140704/tutorial-introduction-to-opengl-4-3-shader-storage-buffers-objects-ssbo-demo/)
+* [objectified](https://www.tomdalling.com/blog/modern-opengl/05-model-assets-and-instances/)

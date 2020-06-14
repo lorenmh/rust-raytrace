@@ -8,6 +8,7 @@ use std::ffi::CString;
 use gl;
 use gl::types::{GLfloat, GLsizeiptr, GLuint, GLint, GLboolean, GLvoid};
 use std::convert::TryFrom;
+use nalgebra as na;
 
 mod gfx;
 
@@ -22,21 +23,6 @@ enum Action {
     Quit,
     Continue
 }
-
-struct Rect {
-    x: f32,
-    y: f32,
-    width: f32,
-    height: f32,
-    color: pixels::Color,
-    vec: [f32; 2],
-}
-
-static VERTEX_DATA: [GLfloat; 15] = [
-    0.0,  0.5,      1.0, 0.0, 0.0,
-    0.5, -0.5,      0.0, 1.0, 0.0,
-    -0.5, -0.5,     0.0, 0.0, 1.0,
-];
 
 fn handle_events(events: &mut sdl2::EventPump) -> Action {
     for event in events.poll_iter() {
@@ -86,11 +72,12 @@ fn main() -> Result<(), String> {
 
     let mut _rng = rand::thread_rng();
 
-    let mut objects: Vec<gfx::object::Object> = Vec::new();
-    let rect = gfx::rectangle::new(0.0, 0.0, 0.7, 0.35, [255, 155, 155]);
-    println!("{}", rect);
-    println!("{:?}", rect.vertices());
-    println!("{:?}", rect.transformation());
+    let mut rect0 = gfx::rectangle::new(-0.5, 0.5, 1.0, 1.5, [155, 155, 255]);
+    let mut rect1 = gfx::rectangle::new(0.3, 0.0, 0.7, 0.35, [255, 155, 155]);
+    rect1.rot = na::Vector3::new(0.0, 0.0, std::f32::consts::PI / 2.0);
+
+    let mut rect2 = gfx::rectangle::new(0.0, 0.0, 0.7, 0.35, [155, 255, 155]);
+
 
     let vs_src = include_str!("shaders/vertex.glsl");
     let fs_src = include_str!("shaders/fragment.glsl");
@@ -100,94 +87,13 @@ fn main() -> Result<(), String> {
 
     let program = gfx::shader::link_program(vs, fs)?;
 
-    let mut vao = 0;
-    let mut vbo = 0;
-
     let (uw, uh) = window.drawable_size();
+
     let width: i32 = i32::try_from(uw).expect("cant cast width");
     let height: i32 = i32::try_from(uh).expect("cant cast height");
-    let numPixels = width * height;
 
-    let dataBuffer = vec![0; (numPixels as usize) * 4];
-
-    let mut data = 0;
-
-    let mut uniformClock: GLint;
-    unsafe {
-        // Create Vertex Array Object
-        gl::GenVertexArrays(1, &mut vao);
-        gl::BindVertexArray(vao);
-
-        // Create a Vertex Buffer Object and copy the vertex data to it
-        gl::GenBuffers(1, &mut vbo);
-        gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
-        gl::BufferData(
-            gl::ARRAY_BUFFER,
-            (VERTEX_DATA.len() * std::mem::size_of::<GLfloat>()) as GLsizeiptr,
-            std::mem::transmute(&VERTEX_DATA[0]),
-            gl::STATIC_DRAW,
-        );
-
-        // r/w data
-        gl::GenBuffers(1, &mut data);
-        gl::BindBuffer(gl::SHADER_STORAGE_BUFFER, data);
-        gl::BufferData(
-            gl::SHADER_STORAGE_BUFFER,
-            (uw * uh * 4 * std::mem::size_of::<GLfloat>() as u32) as GLsizeiptr,
-            std::mem::transmute(&dataBuffer[0]),
-            gl::DYNAMIC_COPY,
-        );
-
-        gl::UseProgram(program);
-
-        // Use shader program
-        let uniformClockID = CString::new("clock").expect("CString::new failed");
-        uniformClock = gl::GetUniformLocation(program, uniformClockID.as_ptr());
-
-        let uniformDimensionsID= CString::new("dimensions").expect("CString::new failed");
-        let uniformDimensions = gl::GetUniformLocation(program, uniformDimensionsID.as_ptr());
-        gl::Uniform2i(uniformDimensions, width as GLint, height as GLint);
-
-        // Specify the layout of the vertex data
-        let attribPositionID = CString::new("attribPosition").expect("CString:new failed");
-        let attribColorID = CString::new("attribColor").expect("CString:new failed");
-
-        let attribPosition = gl::GetAttribLocation(program, attribPositionID.as_ptr());
-        let attribColor = gl::GetAttribLocation(program, attribColorID.as_ptr());
-
-        gl::VertexAttribPointer(
-            attribPosition as GLuint,
-            2,
-            gl::FLOAT,
-            gl::FALSE as GLboolean,
-            (5 * std::mem::size_of::<GLfloat>()) as GLint,
-            (0 * std::mem::size_of::<GLfloat>()) as *const GLvoid,
-        );
-
-        //let offsetPtr: *mut std::ffi::c_void = &mut offset as *mut _ as *mut std::ffi::c_void;
-        gl::VertexAttribPointer(
-            attribColor as GLuint,
-            3,
-            gl::FLOAT,
-            gl::FALSE as GLboolean,
-            (5 * std::mem::size_of::<GLfloat>()) as GLint,
-            (2 * std::mem::size_of::<GLfloat>()) as *const GLvoid,
-        );
-
-        gl::EnableVertexAttribArray(attribPosition as GLuint);
-        gl::EnableVertexAttribArray(attribColor as GLuint);
-
-        let fragDataID = CString::new("FragColor").expect("CString:new failed");
-        gl::BindFragDataLocation(program, 0, fragDataID.as_ptr());
-
-    }
 
     'main: loop {
-        unsafe {
-            gl::ClearColor(0.2, 0.2, 0.2, 1.0);
-            gl::Clear(gl::COLOR_BUFFER_BIT);
-        }
-
         match handle_events(&mut events) {
             Action::Quit => {
                 break 'main;
@@ -200,13 +106,15 @@ fn main() -> Result<(), String> {
         tick = now;
 
         unsafe {
-            let clock = 0.8 + (timer.ticks() as f32 / 100.0).sin() / 10.0;
-            gl::Uniform1f(uniformClock, clock);
-            gl::DrawArrays(gl::TRIANGLES, 0, 3);
-        }
+            gl::ClearColor(0.2, 0.2, 0.2, 1.0);
+            gl::Clear(gl::COLOR_BUFFER_BIT);
 
-        // scene
-        //render_scene(&mut canvas, &mut objects, delta);
+            let clock = 0.8 + (timer.ticks() as f32 / 100.0).sin() / 10.0;
+
+            rect0.render(program, clock, width, height);
+            rect1.render(program, clock, width, height);
+            rect2.render(program, clock, width, height);
+        }
 
         window.gl_swap_window();
     }

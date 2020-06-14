@@ -4,8 +4,8 @@ use gl::types::{GLchar, GLint, GLuint};
 
 fn attach_program() {}
 
-type ShaderProgram = GLuint;
-type Program = GLuint;
+pub type ShaderProgram = GLuint;
+pub type Program = GLuint;
 
 #[repr(u32)]
 pub enum Type {
