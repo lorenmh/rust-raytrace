@@ -21,7 +21,9 @@ const HEIGHT: i16 = 600;
 
 enum Action {
     Quit,
-    Continue
+    Continue,
+    Up,
+    Down,
 }
 
 fn handle_events(events: &mut sdl2::EventPump) -> Action {
@@ -34,6 +36,14 @@ fn handle_events(events: &mut sdl2::EventPump) -> Action {
             Event::KeyDown {keycode: Some(keycode), ..} => {
                 if keycode == Keycode::Escape {
                     return Action::Quit;
+                }
+
+                if keycode == Keycode::W {
+                    return Action::Up;
+                }
+
+                if keycode == Keycode::S {
+                    return Action::Down;
                 }
             }
 
@@ -175,13 +185,14 @@ fn main() -> Result<(), String> {
     let width: i32 = i32::try_from(uw).expect("cant cast width");
     let height: i32 = i32::try_from(uh).expect("cant cast height");
 
+    let aspect = width as f32 / height as f32;
+    let fov = std::f32::consts::PI / 4.0;
+    let mut camera = gfx::camera::new(0.0, 5.0, 50.0, aspect, fov);
+
+
     unsafe {
         gl::Enable(gl::DEPTH_TEST);
         gl::Enable(gl::MULTISAMPLE);
-        //gl::Enable(gl::POLYGON_SMOOTH);
-        //gl::Enable(gl::BLEND) ;
-        //gl::BlendFunc(gl::SRC_ALPHA_SATURATE, gl::ONE) ;
-        //gl::DepthFunc(gl::ALWAYS);
     }
 
     'main: loop {
@@ -199,13 +210,19 @@ fn main() -> Result<(), String> {
 
         unsafe {
             gl::ClearColor(0.05, 0.05, 0.1, 1.0);
-            //gl::Clear(gl::COLOR_BUFFER_BIT);// | gl::DEPTH_BUFFER_BIT);
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
             let clock = timer.ticks() as f32 / 1000.0;
 
+            camera.obj.pos.x = clock.sin() * 20.0;
+            camera.look_at(&na::Point3::new(0.0, 0.0, 0.0));
+
             let params = gfx::render::Params{
-                program, clock, width, height
+                camera: camera.transformation(),
+                program,
+                clock,
+                width,
+                height
             };
 
             x.render(&params);

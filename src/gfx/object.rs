@@ -17,6 +17,14 @@ pub struct Object {
     //pub color: fn(i32) -> crate::gfx::Color,
 }
 
+pub fn new(x: f32, y: f32, z: f32) -> Object {
+   Object{
+       pos: na::Vector3::new(x, y, z),
+       vel: na::Vector3::<f32>::zeros(),
+       rot: na::Vector3::<f32>::zeros(),
+   }
+}
+
 impl Object {
     pub fn to_string(&self) -> std::string::String {
        format!(

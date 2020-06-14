@@ -4,6 +4,7 @@ use gl::types::{GLfloat, GLsizeiptr, GLuint, GLint, GLboolean, GLvoid};
 
 pub struct Params {
     pub program: crate::gfx::shader::Program,
+    pub camera: na::Matrix4<f32>,
     pub clock: f32,
     pub width: i32,
     pub height: i32,
@@ -20,24 +21,6 @@ pub trait Renderable {
 
         let mut vao = 0;
         let mut vbo = 0;
-
-        let aspect_ratio = params.width as f32 / params.height as f32;
-
-        let camera = na::Matrix4::new_perspective(aspect_ratio, std::f32::consts::PI / 2.0, 1.0, -1.0);
-
-        //let mut o = crate::gfx::object::Object{
-        //    pos: 0
-        //}
-
-        let c = na::Matrix4::look_at_rh(
-            &na::Point3::new(params.clock.sin() * 40.0, 10.0, params.clock.cos() * 40.0),
-            &na::Point3::new(0.0, 0.0, 0.0),
-            &na::Vector3::new(0.0, 1.0, 0.0),
-        );
-
-        let d = camera * c;
-        let e = d.as_slice();
-
 
         unsafe {
             gl::GenVertexArrays(1, &mut vao);
@@ -60,7 +43,7 @@ pub trait Renderable {
 
             let uniformCameraID = CString::new("camera").expect("CString::new failed");
             let uniformCamera = gl::GetUniformLocation(params.program, uniformCameraID.as_ptr());
-            gl::UniformMatrix4fv(uniformCamera, 1, gl::FALSE, std::mem::transmute(&e[0]));
+            gl::UniformMatrix4fv(uniformCamera, 1, gl::FALSE, std::mem::transmute(&params.camera[0]));
 
             // Use shader program
             let uniformClockID = CString::new("clock").expect("CString::new failed");
