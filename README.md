@@ -28,11 +28,10 @@ Ideas so far:
 ## To Do
 1. Clean up warnings, better error handling
 1. Materials + Meshes
-1. Window data structures (ie, window dimensions, clock)
-1. camera / perspective
 1. render something with textures
 1. box 2d or equiv
 1. entity component system
+1. fix camera handling (passing around transform right now)
 
 ## Links
 * [The Rust Book](https://doc.rust-lang.org/book/)

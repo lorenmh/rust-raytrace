@@ -100,11 +100,7 @@ pub trait Renderable {
     }
 
     fn mat_model(&self, obj: &crate::gfx::object::Object) -> na::Matrix4<f32> {
-        obj.mat_translation() * obj.mat_rotation()// * self.mat_scale()
-        //obj.mat_rotation() * obj.mat_translation()
-        //obj.mat_translation()
-        //obj.mat_translation()
-        //obj.mat_rotation()
+        obj.mat_translation() * obj.mat_rotation() * self.mat_scale()
     }
 
     fn vertices(&self) -> std::vec::Vec<GLfloat> {
