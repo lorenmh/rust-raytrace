@@ -44,8 +44,6 @@ fn handle_events(events: &mut sdl2::EventPump) -> Action {
     return Action::Continue
 }
 
-//fn render_scene
-
 fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
 
@@ -75,6 +73,7 @@ fn main() -> Result<(), String> {
     let mut rect0 = gfx::rectangle::new(-0.5, 0.5, 1.0, 1.5, [155, 155, 255]);
     let mut rect1 = gfx::rectangle::new(0.3, 0.0, 0.7, 0.35, [255, 155, 155]);
     rect1.rot = na::Vector3::new(0.0, 0.0, std::f32::consts::PI / 2.0);
+    rect1.scale = 1.5;
 
     let mut rect2 = gfx::rectangle::new(0.0, 0.0, 0.7, 0.35, [155, 255, 155]);
 

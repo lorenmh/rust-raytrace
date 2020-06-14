@@ -26,18 +26,15 @@ Ideas so far:
 ## Notes
 
 ## To Do
-1. Read through the LearnOpenGL book
-1. Better error handling (I assume GLSL compile error breaks code, just get a random SIGSEV error; make sure to handle errors)
-1. Move all unsafe code to module
-1. Figure out how matrices are generated
-  - shader can generate transform matrices, however, does it generate a new matrix for each input vertex? if so, create using `nalgebra`
-1. Simple "Hello Shader" program, which displays a single triangle, with vertex shader (x -> x) and a fragment shader that outputs red pixels within triangle
-1. Simple "Hello Polyhedron" program, which displays a polyhedren with perspective projection
-1. Get a better idea of the overall structure here
+1. Clean up warnings, better error handling
+1. Materials + Meshes
+1. Window data structures (ie, window dimensions, clock)
+1. camera / perspective
+1. render something with textures
+1. box 2d or equiv
+1. entity component system
 
 ## Links
-* ~[Learn GFX HAL](https://rust-tutorials.github.io/learn-gfx-hal/01_introduction.html)~
 * [The Rust Book](https://doc.rust-lang.org/book/)
-* [gl-rs example](https://gist.github.com/simias/c140d1479ada4d6218c0)
 * [storage buf example](https://www.geeks3d.com/20140704/tutorial-introduction-to-opengl-4-3-shader-storage-buffers-objects-ssbo-demo/)
 * [objectified](https://www.tomdalling.com/blog/modern-opengl/05-model-assets-and-instances/)
