@@ -2,8 +2,6 @@ use gl;
 use std::ffi::CString;
 use gl::types::{GLchar, GLint, GLuint};
 
-fn attach_program() {}
-
 pub type ShaderProgram = GLuint;
 pub type Program = GLuint;
 

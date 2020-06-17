@@ -1,34 +1,26 @@
 use nalgebra as na;
 use gl::types::GLfloat;
 
-pub struct Object {
+pub struct Physics {
     pub pos: na::Vector3<f32>,
     pub vel: na::Vector3<f32>,
     pub rot: na::Vector3<f32>,
+    pub ang: na::Vector3<f32>,
 }
 
-pub fn new(x: f32, y: f32, z: f32) -> Object {
-   Object{
+pub fn new(x: f32, y: f32, z: f32) -> Physics {
+   Physics {
        pos: na::Vector3::new(x, y, z),
        vel: na::Vector3::<f32>::zeros(),
        rot: na::Vector3::<f32>::zeros(),
+       ang: na::Vector3::<f32>::zeros(),
    }
 }
 
-impl Object {
-    pub fn to_string(&self) -> std::string::String {
-       format!(
-           "pos: {:?}\nvel: {:?}\nrot: {:?}",
-           self.pos,
-           self.vel,
-           self.rot,
-       )
-    }
-
-    pub fn transformation(&self) -> std::vec::Vec<GLfloat> {
-        let m = self.mat_model();
-
-        std::vec::Vec::from(m.as_slice())
+impl Physics {
+    pub fn move_(&mut self, t: f32) {
+        self.pos += na::Vector3::new(t * self.vel.x, t * self.vel.y, t * self.vel.z);
+        self.rot += na::Vector3::new(t * self.ang.x, t * self.ang.y, t * self.ang.z);
     }
 
     pub fn mat_model(&self) -> na::Matrix4<f32> {
@@ -52,7 +44,7 @@ impl Object {
     }
 }
 
-impl std::fmt::Display for Object {
+impl std::fmt::Display for Physics {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
             f,

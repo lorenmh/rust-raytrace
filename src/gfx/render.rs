@@ -1,6 +1,7 @@
 use std::ffi::CString;
 use nalgebra as na;
 use gl::types::{GLfloat, GLsizeiptr, GLuint, GLint, GLboolean, GLvoid};
+use std::convert::TryFrom;
 
 pub struct Params {
     pub program: crate::gfx::shader::Program,
@@ -15,9 +16,9 @@ pub trait Renderable {
     fn mesh(&self) -> &crate::gfx::Mesh;
     fn color(&self) -> fn(i32) -> crate::gfx::Color;
 
-    fn render(&self, obj: &crate::gfx::object::Object, params: &Params) -> Result<(), std::string::String> {
+    fn render(&self, phys: &crate::physics::Physics, params: &Params) -> Result<(), std::string::String> {
         let v = self.vertices();
-        let m = self.transformation(obj);
+        let m = self.transformation(phys);
 
         let mut vao = 0;
         let mut vbo = 0;
@@ -37,32 +38,32 @@ pub trait Renderable {
 
             gl::UseProgram(params.program);
 
-            let uniformModelID = CString::new("model").expect("CString::new failed");
-            let uniformModel = gl::GetUniformLocation(params.program, uniformModelID.as_ptr());
-            gl::UniformMatrix4fv(uniformModel, 1, gl::FALSE, std::mem::transmute(&m[0]));
+            let uniform_model_id = CString::new("model").expect("CString::new failed");
+            let uniform_model = gl::GetUniformLocation(params.program, uniform_model_id.as_ptr());
+            gl::UniformMatrix4fv(uniform_model, 1, gl::FALSE, std::mem::transmute(&m[0]));
 
-            let uniformCameraID = CString::new("camera").expect("CString::new failed");
-            let uniformCamera = gl::GetUniformLocation(params.program, uniformCameraID.as_ptr());
-            gl::UniformMatrix4fv(uniformCamera, 1, gl::FALSE, std::mem::transmute(&params.camera[0]));
+            let uniform_camera_id = CString::new("camera").expect("CString::new failed");
+            let uniform_camera = gl::GetUniformLocation(params.program, uniform_camera_id.as_ptr());
+            gl::UniformMatrix4fv(uniform_camera, 1, gl::FALSE, std::mem::transmute(&params.camera[0]));
 
             // Use shader program
-            let uniformClockID = CString::new("clock").expect("CString::new failed");
-            let uniformClock = gl::GetUniformLocation(params.program, uniformClockID.as_ptr());
-            gl::Uniform1f(uniformClock, params.clock);
+            let uniform_clock_id = CString::new("clock").expect("CString::new failed");
+            let uniform_clock = gl::GetUniformLocation(params.program, uniform_clock_id.as_ptr());
+            gl::Uniform1f(uniform_clock, params.clock);
 
-            let uniformDimensionsID= CString::new("dimensions").expect("CString::new failed");
-            let uniformDimensions = gl::GetUniformLocation(params.program, uniformDimensionsID.as_ptr());
-            gl::Uniform2i(uniformDimensions, params.width as GLint, params.height as GLint);
+            let uniform_dimensions_id = CString::new("dimensions").expect("CString::new failed");
+            let uniform_dimensions = gl::GetUniformLocation(params.program, uniform_dimensions_id.as_ptr());
+            gl::Uniform2i(uniform_dimensions, params.width as GLint, params.height as GLint);
 
             // Specify the layout of the vertex data
-            let attribPositionID = CString::new("attribPosition").expect("CString:new failed");
-            let attribColorID = CString::new("attribColor").expect("CString:new failed");
+            let attrib_position_id = CString::new("attribPosition").expect("CString:new failed");
+            let attrib_color_id = CString::new("attribColor").expect("CString:new failed");
 
-            let attribPosition = gl::GetAttribLocation(params.program, attribPositionID.as_ptr());
-            let attribColor = gl::GetAttribLocation(params.program, attribColorID.as_ptr());
+            let attrib_position = gl::GetAttribLocation(params.program, attrib_position_id.as_ptr());
+            let attrib_color = gl::GetAttribLocation(params.program, attrib_color_id.as_ptr());
 
             gl::VertexAttribPointer(
-                attribPosition as GLuint,
+                attrib_position as GLuint,
                 3,
                 gl::FLOAT,
                 gl::FALSE as GLboolean,
@@ -71,7 +72,7 @@ pub trait Renderable {
             );
 
             gl::VertexAttribPointer(
-                attribColor as GLuint,
+                attrib_color as GLuint,
                 3,
                 gl::FLOAT,
                 gl::FALSE as GLboolean,
@@ -79,13 +80,13 @@ pub trait Renderable {
                 (3 * std::mem::size_of::<GLfloat>()) as *const GLvoid,
             );
 
-            gl::EnableVertexAttribArray(attribPosition as GLuint);
-            gl::EnableVertexAttribArray(attribColor as GLuint);
+            gl::EnableVertexAttribArray(attrib_position as GLuint);
+            gl::EnableVertexAttribArray(attrib_color as GLuint);
 
-            let fragDataID = CString::new("FragColor").expect("CString:new failed");
-            gl::BindFragDataLocation(params.program, 0, fragDataID.as_ptr());
+            let frag_data_id = CString::new("FragColor").expect("CString:new failed");
+            gl::BindFragDataLocation(params.program, 0, frag_data_id.as_ptr());
 
-            gl::DrawArrays(gl::TRIANGLES, 0, 6);
+            gl::DrawArrays(gl::TRIANGLES, 0, self.mesh().len() as i32 * 3);
 
             gl::UseProgram(0);
         }
@@ -93,14 +94,14 @@ pub trait Renderable {
         return Ok(());
     }
 
-    fn transformation(&self, obj: &crate::gfx::object::Object) -> std::vec::Vec<GLfloat> {
-        let m = self.mat_model(obj);
+    fn transformation(&self, phys: &crate::physics::Physics) -> std::vec::Vec<GLfloat> {
+        let m = self.mat_model(phys);
 
         std::vec::Vec::from(m.as_slice())
     }
 
-    fn mat_model(&self, obj: &crate::gfx::object::Object) -> na::Matrix4<f32> {
-        obj.mat_translation() * obj.mat_rotation() * self.mat_scale()
+    fn mat_model(&self, phys: &crate::physics::Physics) -> na::Matrix4<f32> {
+        phys.mat_translation() * phys.mat_rotation() * self.mat_scale()
     }
 
     fn vertices(&self) -> std::vec::Vec<GLfloat> {
@@ -108,7 +109,7 @@ pub trait Renderable {
 
         let a = self.mesh();
 
-        let colorFn = self.color();
+        let color_fn = self.color();
 
         // iterate over triangles
         let mut counter: i32 = 0;
@@ -122,7 +123,7 @@ pub trait Renderable {
                     p.z as GLfloat,
                 ]);
 
-                let color = colorFn(counter);
+                let color = color_fn(counter);
                 // interleaved vertex and color
                 v.extend(vec![
                     color[0] as GLfloat,

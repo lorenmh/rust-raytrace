@@ -1,7 +1,4 @@
-use sdl2::event::Event;
-use sdl2::gfx::primitives::DrawRenderer;
 use sdl2::keyboard::Keycode;
-use sdl2::pixels;
 use rand::Rng;
 use sdl2::video::GLProfile;
 use std::ffi::CString;
@@ -11,6 +8,9 @@ use std::convert::TryFrom;
 use nalgebra as na;
 
 mod gfx;
+mod physics;
+mod input;
+mod shapes;
 
 // traits
 use gfx::render::Renderable;
@@ -18,41 +18,6 @@ use std::string::ToString;
 
 const WIDTH: i16 = 800;
 const HEIGHT: i16 = 600;
-
-enum Action {
-    Quit,
-    Continue,
-    Up,
-    Down,
-}
-
-fn handle_events(events: &mut sdl2::EventPump) -> Action {
-    for event in events.poll_iter() {
-
-        match event {
-
-            Event::Quit {..} => return Action::Quit,
-
-            Event::KeyDown {keycode: Some(keycode), ..} => {
-                if keycode == Keycode::Escape {
-                    return Action::Quit;
-                }
-
-                if keycode == Keycode::W {
-                    return Action::Up;
-                }
-
-                if keycode == Keycode::S {
-                    return Action::Down;
-                }
-            }
-
-            _ => {}
-        }
-    }
-
-    return Action::Continue
-}
 
 fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
@@ -63,7 +28,7 @@ fn main() -> Result<(), String> {
     gl_attr.set_context_profile(GLProfile::Core);
     gl_attr.set_context_version(4, 1);
     gl_attr.set_multisample_buffers(1);
-    gl_attr.set_multisample_samples(16);
+    gl_attr.set_multisample_samples(8);
 
     let window = video_subsys
         .window("gfx", WIDTH as u32, HEIGHT as u32)
@@ -86,65 +51,36 @@ fn main() -> Result<(), String> {
     let green: fn(i32) -> gfx::Color = |i| { [0.2, 0.8, 0.2] };
     let blue: fn(i32) -> gfx::Color = |i| { [0.2, 0.2, 1.0] };
 
-    let mut f1 = gfx::rectangle::new(
-        0.0,
-        0.0,
-        5.0,
-        10.0,
-        10.0,
-        red,
-    );
+    let mut cubes: std::vec::Vec<shapes::cube::Cube> = vec![];
+    for _ in 1..100 {
+        let mut c = shapes::cube::new(
+            _rng.gen_range(-10.0, 10.0),
+            _rng.gen_range(-10.0, 10.0),
+            _rng.gen_range(-10.0, 10.0),
+            _rng.gen_range(0.25, 1.0),
+            _rng.gen_range(0.25, 1.0),
+            _rng.gen_range(0.25, 1.0),
+            |i| -> gfx::Color {
+                if (i / 12) == 0 {
+                    [1.0, 0.3, 0.3]
+                } else if (i / 24) == 1 {
+                    [0.2, 0.8, 0.5]
+                } else {
+                    [0.3, 0.4, 0.9]
+                }
+            },
+        );
 
-    let mut f2 = gfx::rectangle::new(
-        -5.0,
-        0.0,
-        0.0,
-        10.0,
-        10.0,
-        green,
-    );
-    f2.obj.rot.y = std::f32::consts::PI / 2.0;
+        c.phys.ang = na::Vector3::new(
+            _rng.gen_range(-1.0, 1.0),
+            _rng.gen_range(-1.0, 1.0),
+            _rng.gen_range(-1.0, 1.0),
+        );
 
-    let mut f3 = gfx::rectangle::new(
-        0.0,
-        5.0,
-        0.0,
-        10.0,
-        10.0,
-        blue,
-    );
-    f3.obj.rot.x = std::f32::consts::PI / 2.0;
+        cubes.push(c);
+    }
 
-    let mut f4 = gfx::rectangle::new(
-        0.0,
-        0.0,
-        -5.0,
-        10.0,
-        10.0,
-        red,
-    );
-
-    let mut f5 = gfx::rectangle::new(
-        5.0,
-        0.0,
-        0.0,
-        10.0,
-        10.0,
-        green,
-    );
-    f5.obj.rot.y = std::f32::consts::PI / 2.0;
-
-    let mut f6 = gfx::rectangle::new(
-        0.0,
-        -5.0,
-        0.0,
-        10.0,
-        10.0,
-        blue,
-    );
-    f6.obj.rot.x = std::f32::consts::PI / 2.0;
-
-    let x = gfx::rectangle::new(
+    let x = shapes::rectangle::new(
         0.0,
         0.0,
         0.0,
@@ -153,7 +89,7 @@ fn main() -> Result<(), String> {
         |i| { [1.0, 0.0, 0.0] },
     );
 
-    let y = gfx::rectangle::new(
+    let y = shapes::rectangle::new(
         0.0,
         0.0,
         0.0,
@@ -162,7 +98,7 @@ fn main() -> Result<(), String> {
         |i| { [0.0, 1.0, 0.0] },
     );
 
-    let mut z = gfx::rectangle::new(
+    let mut z = shapes::rectangle::new(
         0.0,
         0.0,
         0.0,
@@ -170,7 +106,7 @@ fn main() -> Result<(), String> {
         1000.0,
         |i| { [0.0, 0.0, 1.0] },
     );
-    z.obj.rot.x = std::f32::consts::PI / 2.0;
+    z.phys.rot.x = std::f32::consts::PI / 2.0;
 
     let vs_src = include_str!("shaders/vertex.glsl");
     let fs_src = include_str!("shaders/fragment.glsl");
@@ -195,32 +131,36 @@ fn main() -> Result<(), String> {
         gl::Enable(gl::MULTISAMPLE);
     }
 
+    camera.look_at(&na::Point3::new(0.0, 0.0, 0.0));
+
     'main: loop {
         let now = timer.ticks();
         let delta = now - tick;
         tick = now;
 
-        match handle_events(&mut events) {
-            Action::Quit => {
-                break 'main;
-            }
-            Action::Up => {
-                camera.obj.pos.y += 1.0;
-            }
-            Action::Down => {
-                camera.obj.pos.y -= 1.0;
-            }
-            Action::Continue => {}
+        let delta_v = 1.0;
+        let delta_a = 0.05;
+
+        match input::handle_events(&mut events) {
+            input::Action::Quit => break 'main,
+            input::Action::PanUp => camera.phys.ang += na::Vector3::new(-delta_a, 0.0, 0.0),
+            input::Action::PanDown => camera.phys.ang += na::Vector3::new(delta_a, 0.0, 0.0),
+            input::Action::PanRight => camera.phys.ang += na::Vector3::new(0.0, delta_a, 0.0),
+            input::Action::PanLeft => camera.phys.ang += na::Vector3::new(0.0, -delta_a, 0.0),
+            input::Action::Forward => camera.phys.vel += na::Vector3::new(0.00, 0.0, -delta_v),
+            input::Action::Backward => camera.phys.vel += na::Vector3::new(0.00, 0.0, delta_v),
+            input::Action::Right => camera.phys.vel += na::Vector3::new(delta_v, 0.0, 0.0),
+            input::Action::Left => camera.phys.vel += na::Vector3::new(-delta_v, 0.0, 0.0),
+            _ => {}
         }
 
         unsafe {
             gl::ClearColor(0.05, 0.05, 0.1, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
-            let clock = timer.ticks() as f32 / 1000.0;
+            let clock = delta as f32 / 1000.0;
 
-            camera.obj.pos.x = clock.sin() * 20.0;
-            camera.look_at(&na::Point3::new(0.0, 0.0, 0.0));
+            camera.phys.move_(clock);
 
             let params = gfx::render::Params{
                 camera: camera.transformation(),
@@ -234,12 +174,10 @@ fn main() -> Result<(), String> {
             y.render(&params);
             z.render(&params);
 
-            f1.render(&params);
-            f2.render(&params);
-            f3.render(&params);
-            f4.render(&params);
-            f5.render(&params);
-            f6.render(&params);
+            for mut c in cubes.iter_mut() {
+                c.phys.move_(clock);
+                c.render(&params);
+            }
 
             //let mut rects = vec![&mut red, &mut green, &mut blue];
 
