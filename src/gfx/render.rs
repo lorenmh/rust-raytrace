@@ -11,32 +11,23 @@ pub struct Params {
     pub height: i32,
 }
 
-pub trait Renderable {
-    fn scale(&self) -> f32;
-    fn mesh(&self) -> &crate::gfx::Mesh;
-    fn color(&self) -> fn(i32) -> crate::gfx::Color;
+pub struct Renderer {
+    pub scale: f32,
+    pub mesh: crate::gfx::Mesh,
+    pub color: crate::gfx::ColorFn,
+    vao: u32,
+    vbo: u32,
+}
 
-    fn render(&self, phys: &crate::physics::Physics, params: &Params) -> Result<(), std::string::String> {
-        let v = self.vertices();
+impl Renderer {
+    pub fn render(&mut self, phys: &crate::physics::Physics, params: &Params) -> Result<(), std::string::String> {
         let m = self.transformation(phys);
 
-        let mut vao = 0;
-        let mut vbo = 0;
-
         unsafe {
-            gl::GenVertexArrays(1, &mut vao);
-            gl::BindVertexArray(vao);
-
-            gl::GenBuffers(1, &mut vbo);
-            gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
-            gl::BufferData(
-                gl::ARRAY_BUFFER,
-                (v.len() * std::mem::size_of::<GLfloat>()) as GLsizeiptr,
-                std::mem::transmute(&v[0]),
-                gl::STATIC_DRAW,
-            );
-
             gl::UseProgram(params.program);
+
+            gl::BindVertexArray(self.vao);
+            gl::BindBuffer(gl::ARRAY_BUFFER, self.vbo);
 
             let uniform_model_id = CString::new("model").expect("CString::new failed");
             let uniform_model = gl::GetUniformLocation(params.program, uniform_model_id.as_ptr());
@@ -86,7 +77,7 @@ pub trait Renderable {
             let frag_data_id = CString::new("FragColor").expect("CString:new failed");
             gl::BindFragDataLocation(params.program, 0, frag_data_id.as_ptr());
 
-            gl::DrawArrays(gl::TRIANGLES, 0, self.mesh().len() as i32 * 3);
+            gl::DrawArrays(gl::TRIANGLES, 0, self.mesh.len() as i32 * 3);
 
             gl::UseProgram(0);
         }
@@ -105,15 +96,13 @@ pub trait Renderable {
     }
 
     fn vertices(&self) -> std::vec::Vec<GLfloat> {
-        let mut v: Vec<GLfloat> = Vec::with_capacity(self.mesh().len());
+        let mut v: Vec<GLfloat> = Vec::with_capacity(self.mesh.len());
 
-        let a = self.mesh();
-
-        let color_fn = self.color();
+        let color_fn = &self.color;
 
         // iterate over triangles
         let mut counter: i32 = 0;
-        for  &t in self.mesh() {
+        for  &t in self.mesh.iter() {
 
             // iterate over points in triangles
             for &p in &t {
@@ -139,7 +128,7 @@ pub trait Renderable {
     }
 
     fn mat_scale(&self) -> na::Matrix4<f32> {
-        let s = self.scale();
+        let s = self.scale;
 
         // column major format
         na::Matrix4::from_vec(vec![
@@ -149,16 +138,39 @@ pub trait Renderable {
             0.0, 0.0, 0.0, 1.0,
         ])
     }
+
+    fn init(&mut self) {
+        let v = self.vertices();
+        let mut vao = 0;
+        let mut vbo = 0;
+
+        unsafe {
+            gl::GenVertexArrays(1, &mut vao);
+            gl::GenBuffers(1, &mut vbo);
+            gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
+            gl::BufferData(
+                gl::ARRAY_BUFFER,
+                (v.len() * std::mem::size_of::<GLfloat>()) as GLsizeiptr,
+                std::mem::transmute(&v[0]),
+                gl::STATIC_DRAW,
+            );
+        }
+
+        self.vao = vao;
+        self.vbo = vbo;
+    }
 }
 
-pub struct Renderer {
-    pub scale: f32,
-    pub mesh: crate::gfx::Mesh,
-    pub color: fn(i32) -> crate::gfx::Color,
-}
+pub fn new(scale: f32, mesh: crate::gfx::Mesh, color: crate::gfx::ColorFn) -> Renderer {
+    let mut r = Renderer{
+        scale,
+        mesh,
+        color,
+        vao: 0,
+        vbo: 0,
+    };
 
-impl Renderable for Renderer {
-    fn scale(&self) -> f32 { self.scale }
-    fn mesh(&self) -> &crate::gfx::Mesh { &self.mesh }
-    fn color(&self) -> fn(i32) -> crate::gfx::Color { self.color }
+    r.init();
+
+    r
 }

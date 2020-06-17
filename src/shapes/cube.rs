@@ -1,5 +1,4 @@
 use nalgebra as na;
-use crate::gfx::render::Renderable;
 
 pub struct Cube {
     pub phys: crate::physics::Physics,
@@ -75,14 +74,14 @@ pub fn new<'a>(x: f32, y: f32, z: f32, width: f32, height: f32, depth: f32, colo
 
     Cube{
         phys: crate::physics::new(x, y, z),
-        gfx: crate::gfx::render::Renderer{
-            scale: 1.0,
-            color,
+        gfx: crate::gfx::render::new(
+            1.0,
             mesh,
-        }
+            color,
+        ),
     }
 }
 
 impl Cube {
-    pub fn render(&self, params: &crate::gfx::render::Params) { self.gfx.render(&self.phys, params).expect("err rendering") }
+    pub fn render(&mut self, params: &crate::gfx::render::Params) { self.gfx.render(&self.phys, params).expect("err rendering") }
 }

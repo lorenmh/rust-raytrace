@@ -13,7 +13,6 @@ mod input;
 mod shapes;
 
 // traits
-use gfx::render::Renderable;
 use std::string::ToString;
 
 const WIDTH: i16 = 800;
@@ -52,21 +51,27 @@ fn main() -> Result<(), String> {
     let blue: fn(i32) -> gfx::Color = |i| { [0.2, 0.2, 1.0] };
 
     let mut cubes: std::vec::Vec<shapes::cube::Cube> = vec![];
-    for _ in 1..100 {
+    for _ in 1..500 {
         let mut c = shapes::cube::new(
+        _rng.gen_range(-10.0, 10.0),
             _rng.gen_range(-10.0, 10.0),
             _rng.gen_range(-10.0, 10.0),
-            _rng.gen_range(-10.0, 10.0),
-            _rng.gen_range(0.25, 1.0),
-            _rng.gen_range(0.25, 1.0),
-            _rng.gen_range(0.25, 1.0),
+            _rng.gen_range(0.15, 0.75),
+            _rng.gen_range(0.15, 0.75),
+            _rng.gen_range(0.15, 0.75),
             |i| -> gfx::Color {
-                if (i / 12) == 0 {
-                    [1.0, 0.3, 0.3]
-                } else if (i / 24) == 1 {
-                    [0.2, 0.8, 0.5]
+                if (i / 6) == 0 {
+                    [1.0,0.0,0.0]
+                } else if (i / 6) == 1 {
+                    [0.0,1.0,0.0]
+                } else if (i / 6) == 2 {
+                    [0.0,0.0,1.0]
+                } else if (i / 6) == 3 {
+                    [1.0,1.0,0.0]
+                } else if (i / 6) == 4 {
+                    [0.0,1.0,1.0]
                 } else {
-                    [0.3, 0.4, 0.9]
+                    [1.0,0.0,1.0]
                 }
             },
         );
@@ -80,33 +85,33 @@ fn main() -> Result<(), String> {
         cubes.push(c);
     }
 
-    let x = shapes::rectangle::new(
-        0.0,
-        0.0,
-        0.0,
-        1000.0,
-        0.2,
-        |i| { [1.0, 0.0, 0.0] },
-    );
+    //let mut x = shapes::rectangle::new(
+    //    0.0,
+    //    0.0,
+    //    0.0,
+    //    1000.0,
+    //    0.2,
+    //    |i| { [1.0, 0.0, 0.0] },
+    //);
 
-    let y = shapes::rectangle::new(
-        0.0,
-        0.0,
-        0.0,
-        0.2,
-        1000.0,
-        |i| { [0.0, 1.0, 0.0] },
-    );
+    //let mut y = shapes::rectangle::new(
+    //    0.0,
+    //    0.0,
+    //    0.0,
+    //    0.2,
+    //    1000.0,
+    //    |i| { [0.0, 1.0, 0.0] },
+    //);
 
-    let mut z = shapes::rectangle::new(
-        0.0,
-        0.0,
-        0.0,
-        0.2,
-        1000.0,
-        |i| { [0.0, 0.0, 1.0] },
-    );
-    z.phys.rot.x = std::f32::consts::PI / 2.0;
+    //let mut z = shapes::rectangle::new(
+    //    0.0,
+    //    0.0,
+    //    0.0,
+    //    0.2,
+    //    1000.0,
+    //    |i| { [0.0, 0.0, 1.0] },
+    //);
+    //z.phys.rot.x = std::f32::consts::PI / 2.0;
 
     let vs_src = include_str!("shaders/vertex.glsl");
     let fs_src = include_str!("shaders/fragment.glsl");
@@ -131,7 +136,7 @@ fn main() -> Result<(), String> {
         gl::Enable(gl::MULTISAMPLE);
     }
 
-    camera.look_at(&na::Point3::new(0.0, 0.0, 0.0));
+    //camera.look_at(&na::Point3::new(0.0, 0.0, 0.0));
 
     'main: loop {
         let now = timer.ticks();
@@ -170,11 +175,16 @@ fn main() -> Result<(), String> {
                 height
             };
 
-            x.render(&params);
-            y.render(&params);
-            z.render(&params);
+            //x.render(&params);
+            //y.render(&params);
+            //z.render(&params);
 
             for mut c in cubes.iter_mut() {
+                c.phys.vel += na::Vector3::new(
+                        _rng.gen_range(-0.05, 0.05),
+                        _rng.gen_range(-0.05,0.05),
+                        _rng.gen_range(-0.05,0.05),
+                    );
                 c.phys.move_(clock);
                 c.render(&params);
             }

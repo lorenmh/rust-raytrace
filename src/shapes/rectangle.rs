@@ -1,5 +1,4 @@
 use nalgebra as na;
-use crate::gfx::render::Renderable;
 
 pub struct Rectangle {
     pub phys: crate::physics::Physics,
@@ -22,11 +21,11 @@ pub fn new<'a>(x: f32, y: f32, z: f32, width: f32, height: f32, color: crate::gf
 
     Rectangle{
         phys: crate::physics::new(x, y, z),
-        gfx: crate::gfx::render::Renderer{
-            scale: 1.0,
-            color,
+        gfx: crate::gfx::render::new(
+            1.0,
             mesh,
-        }
+            color,
+        ),
     }
 }
 
@@ -41,7 +40,7 @@ fn translate_mesh(&mat: &na::Matrix4<f32>, triangle: &crate::gfx::Triangle) -> c
 }
 
 impl Rectangle {
-    pub fn render(&self, params: &crate::gfx::render::Params) { self.gfx.render(&self.phys, params).expect("err rendering") }
+    pub fn render(&mut self, params: &crate::gfx::render::Params) { self.gfx.render(&self.phys, params).expect("err rendering") }
     pub fn vertices(&self) -> std::vec::Vec<crate::gfx::Triangle> {
         let mat = self.phys.mat_model();
         return self.gfx.mesh.iter().map(|t| translate_mesh(&mat, &t)).rev().collect();
