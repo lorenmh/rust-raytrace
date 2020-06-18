@@ -85,33 +85,33 @@ fn main() -> Result<(), String> {
         cubes.push(c);
     }
 
-    //let mut x = shapes::rectangle::new(
-    //    0.0,
-    //    0.0,
-    //    0.0,
-    //    1000.0,
-    //    0.2,
-    //    |i| { [1.0, 0.0, 0.0] },
-    //);
+    let mut x = shapes::rectangle::new(
+        0.0,
+        0.0,
+        0.0,
+        1000.0,
+        0.2,
+        |i| { [1.0, 0.0, 0.0] },
+    );
 
-    //let mut y = shapes::rectangle::new(
-    //    0.0,
-    //    0.0,
-    //    0.0,
-    //    0.2,
-    //    1000.0,
-    //    |i| { [0.0, 1.0, 0.0] },
-    //);
+    let mut y = shapes::rectangle::new(
+        0.0,
+        0.0,
+        0.0,
+        0.2,
+        1000.0,
+        |i| { [0.0, 1.0, 0.0] },
+    );
 
-    //let mut z = shapes::rectangle::new(
-    //    0.0,
-    //    0.0,
-    //    0.0,
-    //    0.2,
-    //    1000.0,
-    //    |i| { [0.0, 0.0, 1.0] },
-    //);
-    //z.phys.rot.x = std::f32::consts::PI / 2.0;
+    let mut z = shapes::rectangle::new(
+        0.0,
+        0.0,
+        0.0,
+        0.2,
+        1000.0,
+        |i| { [0.0, 0.0, 1.0] },
+    );
+    z.phys.rot = na::Rotation3::new(na::Vector3::x() * -std::f32::consts::FRAC_PI_2);
 
     let vs_src = include_str!("shaders/vertex.glsl");
     let fs_src = include_str!("shaders/fragment.glsl");
@@ -128,7 +128,7 @@ fn main() -> Result<(), String> {
 
     let aspect = width as f32 / height as f32;
     let fov = std::f32::consts::PI / 4.0;
-    let mut camera = gfx::camera::new(0.0, 5.0, 50.0, aspect, fov);
+    let mut camera = gfx::camera::new(0.0, 5.0, -100.0, aspect, fov);
 
 
     unsafe {
@@ -143,21 +143,36 @@ fn main() -> Result<(), String> {
         let delta = now - tick;
         tick = now;
 
-        let delta_v = 1.0;
-        let delta_a = 0.05;
+        let delta_v = 4.0;
+        let delta_a = 0.05 * std::f32::consts::PI;
+
+        let (dir_x, dir_y, dir_z,) = camera.phys.direction();
+
 
         match input::handle_events(&mut events) {
             input::Action::Quit => break 'main,
-            input::Action::PanUp => camera.phys.ang += na::Vector3::new(-delta_a, 0.0, 0.0),
-            input::Action::PanDown => camera.phys.ang += na::Vector3::new(delta_a, 0.0, 0.0),
-            input::Action::PanRight => camera.phys.ang += na::Vector3::new(0.0, delta_a, 0.0),
-            input::Action::PanLeft => camera.phys.ang += na::Vector3::new(0.0, -delta_a, 0.0),
-            input::Action::Forward => camera.phys.vel += na::Vector3::new(0.00, 0.0, -delta_v),
-            input::Action::Backward => camera.phys.vel += na::Vector3::new(0.00, 0.0, delta_v),
-            input::Action::Right => camera.phys.vel += na::Vector3::new(delta_v, 0.0, 0.0),
-            input::Action::Left => camera.phys.vel += na::Vector3::new(-delta_v, 0.0, 0.0),
-            _ => {}
+
+            input::Action::PanUp => camera.phys.ang += na::Vector3::x() * -delta_a,
+            input::Action::PanDown => camera.phys.ang += na::Vector3::x() * delta_a,
+            input::Action::PanLeft => camera.phys.ang += na::Vector3::y() * delta_a,
+            input::Action::PanRight => camera.phys.ang += na::Vector3::y() * -delta_a,
+            input::Action::YawLeft => camera.phys.ang += na::Vector3::z() * -delta_a,
+            input::Action::YawRight => camera.phys.ang += na::Vector3::z() * delta_a,
+
+            input::Action::Forward => camera.phys.vel += dir_z * delta_v,
+            input::Action::Backward => camera.phys.vel += dir_z * -delta_v,
+            input::Action::Left => camera.phys.vel += dir_x * delta_v,
+            input::Action::Right => camera.phys.vel += dir_x * -delta_v,
+
+            input::Action::Stop => {
+                camera.phys.vel = na::Vector3::zeros();
+                camera.phys.ang = na::Vector3::zeros();
+            },
+            _ => {
+
+            }
         }
+        println!("dir: {:?}\npos: {:?}\nvel:{:?}", camera.phys.direction(), camera.phys.pos, camera.phys.vel);
 
         unsafe {
             gl::ClearColor(0.05, 0.05, 0.1, 1.0);
@@ -175,9 +190,9 @@ fn main() -> Result<(), String> {
                 height
             };
 
-            //x.render(&params);
-            //y.render(&params);
-            //z.render(&params);
+            x.render(&params);
+            y.render(&params);
+            z.render(&params);
 
             for mut c in cubes.iter_mut() {
                 c.phys.vel += na::Vector3::new(

@@ -32,7 +32,7 @@ pub fn new<'a>(x: f32, y: f32, z: f32, width: f32, height: f32, depth: f32, colo
         height,
         color,
     );
-    left.phys.rot.y = std::f32::consts::PI / 2.0;
+    left.phys.rot = na::Rotation3::new(na::Vector3::y() * std::f32::consts::FRAC_PI_2);
 
     let mut right = crate::shapes::rectangle::new(
         width / 2.0,
@@ -42,7 +42,7 @@ pub fn new<'a>(x: f32, y: f32, z: f32, width: f32, height: f32, depth: f32, colo
         height,
         color,
     );
-    right.phys.rot.y = -std::f32::consts::PI / 2.0;
+    right.phys.rot = na::Rotation3::new(na::Vector3::y() * -std::f32::consts::FRAC_PI_2);
 
     let mut top = crate::shapes::rectangle::new(
         0.0,
@@ -52,7 +52,7 @@ pub fn new<'a>(x: f32, y: f32, z: f32, width: f32, height: f32, depth: f32, colo
         depth,
         color,
     );
-    top.phys.rot.x = std::f32::consts::PI / 2.0;
+    top.phys.rot = na::Rotation3::new(na::Vector3::x() * std::f32::consts::FRAC_PI_2);
 
     let mut bottom = crate::shapes::rectangle::new(
         0.0,
@@ -62,7 +62,7 @@ pub fn new<'a>(x: f32, y: f32, z: f32, width: f32, height: f32, depth: f32, colo
         depth,
         color,
     );
-    bottom.phys.rot.x = -std::f32::consts::PI / 2.0;
+    bottom.phys.rot = na::Rotation3::new(na::Vector3::x() * -std::f32::consts::FRAC_PI_2);
 
 
     let mut mesh: std::vec::Vec<crate::gfx::Triangle> = front.vertices();

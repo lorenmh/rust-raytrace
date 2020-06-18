@@ -1,4 +1,5 @@
 use nalgebra as na;
+use core::convert::From;
 
 pub struct Rectangle {
     pub phys: crate::physics::Physics,

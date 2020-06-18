@@ -14,6 +14,9 @@ pub enum Action {
     Left,
     Forward,
     Backward,
+    Stop,
+    YawLeft,
+    YawRight,
 }
 
 
@@ -32,10 +35,16 @@ pub fn handle_events(events: &mut sdl2::EventPump) -> Action {
                     Keycode::S => Action::Backward,
                     Keycode::D => Action::Right,
                     Keycode::A => Action::Left,
+
                     Keycode::Down => Action::PanDown,
                     Keycode::Up => Action::PanUp,
                     Keycode::Right => Action::PanRight,
                     Keycode::Left => Action::PanLeft,
+                    Keycode::Space => Action::Stop,
+
+                    Keycode::Q => Action::YawLeft,
+                    Keycode::E => Action::YawRight,
+
                     _ => Action::Continue,
                 };
             }
