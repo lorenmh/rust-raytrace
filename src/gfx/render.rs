@@ -20,9 +20,7 @@ pub struct Renderer {
 }
 
 impl Renderer {
-    pub fn render(&mut self, phys: &crate::physics::Physics, params: &Params) -> Result<(), std::string::String> {
-        let m = self.transformation(phys);
-
+    pub fn render(&self, phys: &crate::physics::Physics, params: &Params) -> Result<(), std::string::String> {
         unsafe {
             gl::UseProgram(params.program);
 
@@ -31,7 +29,7 @@ impl Renderer {
 
             let uniform_model_id = CString::new("model").expect("CString::new failed");
             let uniform_model = gl::GetUniformLocation(params.program, uniform_model_id.as_ptr());
-            gl::UniformMatrix4fv(uniform_model, 1, gl::FALSE, std::mem::transmute(&m[0]));
+            gl::UniformMatrix4fv(uniform_model, 1, gl::FALSE, std::mem::transmute(&self.transformation(phys)[0]));
 
             let uniform_camera_id = CString::new("camera").expect("CString::new failed");
             let uniform_camera = gl::GetUniformLocation(params.program, uniform_camera_id.as_ptr());

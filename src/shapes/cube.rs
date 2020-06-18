@@ -5,7 +5,7 @@ pub struct Cube {
     pub gfx: crate::gfx::render::Renderer,
 }
 
-pub fn new<'a>(x: f32, y: f32, z: f32, width: f32, height: f32, depth: f32, color: crate::gfx::ColorFn) -> Cube {
+pub fn new(x: f32, y: f32, z: f32, width: f32, height: f32, depth: f32, color: crate::gfx::ColorFn) -> Cube {
     let mut front = crate::shapes::rectangle::new(
         0.0,
         0.0,

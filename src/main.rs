@@ -77,41 +77,14 @@ fn main() -> Result<(), String> {
         );
 
         c.phys.ang = na::Vector3::new(
-            _rng.gen_range(-1.0, 1.0),
-            _rng.gen_range(-1.0, 1.0),
-            _rng.gen_range(-1.0, 1.0),
+            _rng.gen_range(-2.0, 2.0),
+            _rng.gen_range(-2.0,2.0),
+            _rng.gen_range(-2.0,2.0),
         );
 
         cubes.push(c);
     }
 
-    let mut x = shapes::rectangle::new(
-        0.0,
-        0.0,
-        0.0,
-        1000.0,
-        0.2,
-        |i| { [1.0, 0.0, 0.0] },
-    );
-
-    let mut y = shapes::rectangle::new(
-        0.0,
-        0.0,
-        0.0,
-        0.2,
-        1000.0,
-        |i| { [0.0, 1.0, 0.0] },
-    );
-
-    let mut z = shapes::rectangle::new(
-        0.0,
-        0.0,
-        0.0,
-        0.2,
-        1000.0,
-        |i| { [0.0, 0.0, 1.0] },
-    );
-    z.phys.rot = na::Rotation3::new(na::Vector3::x() * -std::f32::consts::FRAC_PI_2);
 
     let vs_src = include_str!("shaders/vertex.glsl");
     let fs_src = include_str!("shaders/fragment.glsl");
@@ -130,13 +103,12 @@ fn main() -> Result<(), String> {
     let fov = std::f32::consts::PI / 4.0;
     let mut camera = gfx::camera::new(0.0, 5.0, -100.0, aspect, fov);
 
+    let axes = shapes::axes::new();
 
     unsafe {
         gl::Enable(gl::DEPTH_TEST);
         gl::Enable(gl::MULTISAMPLE);
     }
-
-    //camera.look_at(&na::Point3::new(0.0, 0.0, 0.0));
 
     'main: loop {
         let now = timer.ticks();
@@ -172,7 +144,6 @@ fn main() -> Result<(), String> {
 
             }
         }
-        println!("dir: {:?}\npos: {:?}\nvel:{:?}", camera.phys.direction(), camera.phys.pos, camera.phys.vel);
 
         unsafe {
             gl::ClearColor(0.05, 0.05, 0.1, 1.0);
@@ -183,29 +154,31 @@ fn main() -> Result<(), String> {
             camera.phys.move_(clock);
 
             let params = gfx::render::Params{
-                camera: camera.transformation(),
                 program,
-                clock,
+                camera: camera.transformation(),
                 width,
-                height
+                height,
+                clock,
             };
 
-            x.render(&params);
-            y.render(&params);
-            z.render(&params);
+            //axes.render(&params);
+
+            let mut centroid: na::Vector3<f32> = na::Vector3::zeros();
+            for mut c in cubes.iter() {
+                centroid += c.phys.pos;
+            }
+            centroid /= cubes.len() as f32;
 
             for mut c in cubes.iter_mut() {
                 c.phys.vel += na::Vector3::new(
-                        _rng.gen_range(-0.05, 0.05),
-                        _rng.gen_range(-0.05,0.05),
-                        _rng.gen_range(-0.05,0.05),
+                        _rng.gen_range(-0.1, 0.1),
+                        _rng.gen_range(-0.1,0.1),
+                        _rng.gen_range(-0.1,0.1),
                     );
+                c.phys.vel += (centroid - c.phys.pos) * 0.0005;
                 c.phys.move_(clock);
                 c.render(&params);
             }
-
-            //let mut rects = vec![&mut red, &mut green, &mut blue];
-
         }
 
         window.gl_swap_window();
