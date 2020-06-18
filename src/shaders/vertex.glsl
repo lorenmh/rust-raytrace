@@ -7,9 +7,13 @@ uniform mat4 model;
 uniform mat4 camera;
 
 out vec3 color;
+out float distance;
 
 void main() {
-    gl_Position = camera * model * vec4(attribPosition, 1.0);
+    vec4 p = model * vec4(attribPosition, 1.0);
+    gl_Position = camera * p;
+
     color = attribColor;
-    //color = vec3(1.0, 0.0, 0.0);
+
+    distance = length(p);
 }

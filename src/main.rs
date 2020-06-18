@@ -46,12 +46,12 @@ fn main() -> Result<(), String> {
 
     let mut _rng = rand::thread_rng();
 
-    let red: fn(i32) -> gfx::Color = |i| { [1.0, 0.2, 0.2] };
-    let green: fn(i32) -> gfx::Color = |i| { [0.2, 0.8, 0.2] };
-    let blue: fn(i32) -> gfx::Color = |i| { [0.2, 0.2, 1.0] };
+    let red: fn(i32) -> gfx::Color = |i| { if (i % 2) == 0 { [1.0, 0.2, 0.2] } else { [1.0, 0.4, 0.4] } };
+    let green: fn(i32) -> gfx::Color = |i| { if (i % 2) == 0 { [0.3, 0.9, 0.4] } else { [0.5, 1.0, 0.6] } };
+    let blue: fn(i32) -> gfx::Color = |i| { if (i % 2) == 0 { [0.0, 0.89, 0.91] } else { [0.2, 1.0, 1.0] } };
 
     let mut cubes: std::vec::Vec<shapes::cube::Cube> = vec![];
-    for _ in 1..500 {
+    for _ in 1..150 {
         let mut c = shapes::cube::new(
         _rng.gen_range(-10.0, 10.0),
             _rng.gen_range(-10.0, 10.0),
@@ -59,23 +59,14 @@ fn main() -> Result<(), String> {
             _rng.gen_range(0.15, 0.75),
             _rng.gen_range(0.15, 0.75),
             _rng.gen_range(0.15, 0.75),
-            |i| -> gfx::Color {
-                if (i / 6) == 0 {
-                    [1.0,0.0,0.0]
-                } else if (i / 6) == 1 {
-                    [0.0,1.0,0.0]
-                } else if (i / 6) == 2 {
-                    [0.0,0.0,1.0]
-                } else if (i / 6) == 3 {
-                    [1.0,1.0,0.0]
-                } else if (i / 6) == 4 {
-                    [0.0,1.0,1.0]
-                } else {
-                    [1.0,0.0,1.0]
-                }
-            },
+            red,
         );
 
+        c.phys.vel += na::Vector3::new(
+            _rng.gen_range(-1.0, 1.0),
+            _rng.gen_range(-1.0,1.0),
+            _rng.gen_range(-1.0,1.0),
+        );
         c.phys.ang = na::Vector3::new(
             _rng.gen_range(-2.0, 2.0),
             _rng.gen_range(-2.0,2.0),
@@ -85,7 +76,55 @@ fn main() -> Result<(), String> {
         cubes.push(c);
     }
 
+    for _ in 1..150 {
+        let mut c = shapes::cube::new(
+            _rng.gen_range(-20.0, 20.0),
+            _rng.gen_range(-20.0, 20.0),
+            _rng.gen_range(-20.0, 20.0),
+            _rng.gen_range(0.05, 0.55),
+            _rng.gen_range(0.05, 0.55),
+            _rng.gen_range(0.05, 0.55),
+            green,
+        );
 
+        c.phys.vel += na::Vector3::new(
+            _rng.gen_range(-1.0, 1.0),
+            _rng.gen_range(-1.0,1.0),
+            _rng.gen_range(-1.0,1.0),
+        );
+        c.phys.ang = na::Vector3::new(
+            _rng.gen_range(-2.0, 2.0),
+            _rng.gen_range(-2.0,2.0),
+            _rng.gen_range(-2.0,2.0),
+        );
+
+        cubes.push(c);
+    }
+
+    for _ in 1..150 {
+        let mut c = shapes::cube::new(
+            _rng.gen_range(-15.0, 15.0),
+            _rng.gen_range(-15.0, 15.0),
+            _rng.gen_range(-15.0, 15.0),
+            _rng.gen_range(0.5, 1.0),
+            _rng.gen_range(0.05, 0.3),
+            _rng.gen_range(0.05, 0.3),
+            blue,
+        );
+
+        c.phys.vel += na::Vector3::new(
+            _rng.gen_range(-1.0, 1.0),
+            _rng.gen_range(-1.0,1.0),
+            _rng.gen_range(-1.0,1.0),
+        );
+        c.phys.ang = na::Vector3::new(
+            _rng.gen_range(-2.0, 2.0),
+            _rng.gen_range(-4.0,4.0),
+            _rng.gen_range(-2.0,2.0),
+        );
+
+        cubes.push(c);
+    }
     let vs_src = include_str!("shaders/vertex.glsl");
     let fs_src = include_str!("shaders/fragment.glsl");
 
@@ -101,7 +140,7 @@ fn main() -> Result<(), String> {
 
     let aspect = width as f32 / height as f32;
     let fov = std::f32::consts::PI / 4.0;
-    let mut camera = gfx::camera::new(0.0, 5.0, -100.0, aspect, fov);
+    let mut camera = gfx::camera::new(0.0, 0.0, -20.0, aspect, fov);
 
     let axes = shapes::axes::new();
 
@@ -170,12 +209,7 @@ fn main() -> Result<(), String> {
             centroid /= cubes.len() as f32;
 
             for mut c in cubes.iter_mut() {
-                c.phys.vel += na::Vector3::new(
-                        _rng.gen_range(-0.1, 0.1),
-                        _rng.gen_range(-0.1,0.1),
-                        _rng.gen_range(-0.1,0.1),
-                    );
-                c.phys.vel += (centroid - c.phys.pos) * 0.0005;
+                c.phys.vel += (centroid - c.phys.pos) * _rng.gen_range(0.0005, 0.001);
                 c.phys.move_(clock);
                 c.render(&params);
             }

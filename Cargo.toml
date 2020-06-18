@@ -9,16 +9,10 @@ build = "build.rs"
 rand = "0.7.3"
 gl = "0.14.0"
 nalgebra = "0.21.0"
-#gfx = "0.18.2"
-#gfx_window_sdl = "0.9.1"
 
 [dependencies.sdl2]
 version = "0.34.0"
 default-features = false
-features = ["gfx"]
 
 [[example]]
 name = "gl-rs"
-
-#[[example]]
-#name = "gfx-rs"

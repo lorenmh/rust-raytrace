@@ -3,21 +3,21 @@
 out vec4 FragColor;
 
 in vec3 color;
+in float distance;
 in vec4 gl_FragCoord;
 
-//uniform float clock;
+uniform float clock;
 
 void main() {
-   //float s = mod(floor(gl_FragCoord.x / 5.0), 2.0) * 0.02;
-   //float t = mod(floor(gl_FragCoord.y / 5.0), 2.0) * 0.02;
-   float clock = 1.0;
-   float s = 0.0;
-   float t = 0.0;
+    float m = 15.0;
+    float d;
+    if (distance < m) {
+        d = distance / m;
+    } else {
+        d = 1.0;
+    }
+    float cubic = 1.0 - (d * d);
+    FragColor = vec4((color * cubic * 0.7) + (color * 0.3), 1.0);
 
-   FragColor = vec4(
-      color.x * clock + s + t,
-      color.y * clock + s + t,
-      color.z * clock + s + t,
-      1.0
-   );
+   //FragColor = vec4(normalize(color+ light), 1.0);
 }
