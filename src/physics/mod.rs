@@ -1,6 +1,8 @@
 use nalgebra as na;
 use gl::types::GLfloat;
 
+mod environment;
+
 pub struct Physics {
     pub pos: na::Vector3<f32>,
     pub vel: na::Vector3<f32>,
@@ -27,13 +29,13 @@ impl Physics {
     pub fn direction(&self) -> (na::Vector3<f32>, na::Vector3<f32>, na::Vector3<f32>) {
         let mat = self.mat_rotation();
 
-        let ux = mat * na::Vector3::new(1.0, 0.0, 0.0).to_homogeneous();
-        let uy = mat * na::Vector3::new(0.0, 1.0, 0.0).to_homogeneous();
-        let uz = mat * na::Vector3::new(0.0, 0.0, 1.0).to_homogeneous();
+        let hx = mat * na::Vector3::x().to_homogeneous();
+        let hy = mat * na::Vector3::y().to_homogeneous();
+        let hz = mat * na::Vector3::z().to_homogeneous();
 
-        let x = na::Vector3::from_homogeneous(ux).unwrap();
-        let y = na::Vector3::from_homogeneous(uy).unwrap();
-        let z = na::Vector3::from_homogeneous(uz).unwrap();
+        let x = na::Vector3::from_homogeneous(hx).unwrap();
+        let y = na::Vector3::from_homogeneous(hy).unwrap();
+        let z = na::Vector3::from_homogeneous(hz).unwrap();
 
         (x, y, z,)
     }

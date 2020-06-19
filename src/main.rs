@@ -29,7 +29,7 @@ fn main() -> Result<(), String> {
     gl_attr.set_multisample_buffers(1);
     gl_attr.set_multisample_samples(8);
 
-    let window = video_subsys
+    let mut window = video_subsys
         .window("gfx", WIDTH as u32, HEIGHT as u32)
         .position_centered()
         .opengl()
@@ -40,7 +40,6 @@ fn main() -> Result<(), String> {
     gl::load_with(|name| video_subsys.gl_get_proc_address(name) as *const _);
 
     let mut events = sdl_context.event_pump()?;
-
     let mut timer = sdl_context.timer()?;
     let mut tick: u32 = 0;
 
@@ -51,80 +50,35 @@ fn main() -> Result<(), String> {
     let blue: fn(i32) -> gfx::Color = |i| { if (i % 2) == 0 { [0.0, 0.89, 0.91] } else { [0.2, 1.0, 1.0] } };
 
     let mut cubes: std::vec::Vec<shapes::cube::Cube> = vec![];
-    for _ in 1..150 {
-        let mut c = shapes::cube::new(
-        _rng.gen_range(-10.0, 10.0),
-            _rng.gen_range(-10.0, 10.0),
-            _rng.gen_range(-10.0, 10.0),
-            _rng.gen_range(0.15, 0.75),
-            _rng.gen_range(0.15, 0.75),
-            _rng.gen_range(0.15, 0.75),
-            red,
-        );
+    for i in 0..3 {
+        let c = if (i == 0) { red } else if (i == 1) { green } else { blue };
+        for _ in 1..100 {
+            let mut c = shapes::cube::new(
+                i,
+                _rng.gen_range(-50.0, 50.0),
+                _rng.gen_range(-50.0, 50.0),
+                _rng.gen_range(-50.0, 50.0),
+                _rng.gen_range(0.30, 1.5),
+                _rng.gen_range(0.30, 1.5),
+                _rng.gen_range(0.30, 1.5),
+                c,
+            );
 
-        c.phys.vel += na::Vector3::new(
-            _rng.gen_range(-1.0, 1.0),
-            _rng.gen_range(-1.0,1.0),
-            _rng.gen_range(-1.0,1.0),
-        );
-        c.phys.ang = na::Vector3::new(
-            _rng.gen_range(-2.0, 2.0),
-            _rng.gen_range(-2.0,2.0),
-            _rng.gen_range(-2.0,2.0),
-        );
+            //c.phys.vel += na::Vector3::new(
+            //    _rng.gen_range(-1.0, 1.0),
+            //    _rng.gen_range(-1.0,1.0),
+            //    _rng.gen_range(-1.0,1.0),
+            //);
+            c.phys.ang = na::Vector3::new(
+                _rng.gen_range(-0.5, 0.5),
+                _rng.gen_range(-0.5, 0.5),
+                _rng.gen_range(-0.5, 0.5),
+            );
 
-        cubes.push(c);
+            cubes.push(c);
+        }
     }
 
-    for _ in 1..150 {
-        let mut c = shapes::cube::new(
-            _rng.gen_range(-20.0, 20.0),
-            _rng.gen_range(-20.0, 20.0),
-            _rng.gen_range(-20.0, 20.0),
-            _rng.gen_range(0.05, 0.55),
-            _rng.gen_range(0.05, 0.55),
-            _rng.gen_range(0.05, 0.55),
-            green,
-        );
-
-        c.phys.vel += na::Vector3::new(
-            _rng.gen_range(-1.0, 1.0),
-            _rng.gen_range(-1.0,1.0),
-            _rng.gen_range(-1.0,1.0),
-        );
-        c.phys.ang = na::Vector3::new(
-            _rng.gen_range(-2.0, 2.0),
-            _rng.gen_range(-2.0,2.0),
-            _rng.gen_range(-2.0,2.0),
-        );
-
-        cubes.push(c);
-    }
-
-    for _ in 1..150 {
-        let mut c = shapes::cube::new(
-            _rng.gen_range(-15.0, 15.0),
-            _rng.gen_range(-15.0, 15.0),
-            _rng.gen_range(-15.0, 15.0),
-            _rng.gen_range(0.5, 1.0),
-            _rng.gen_range(0.05, 0.3),
-            _rng.gen_range(0.05, 0.3),
-            blue,
-        );
-
-        c.phys.vel += na::Vector3::new(
-            _rng.gen_range(-1.0, 1.0),
-            _rng.gen_range(-1.0,1.0),
-            _rng.gen_range(-1.0,1.0),
-        );
-        c.phys.ang = na::Vector3::new(
-            _rng.gen_range(-2.0, 2.0),
-            _rng.gen_range(-4.0,4.0),
-            _rng.gen_range(-2.0,2.0),
-        );
-
-        cubes.push(c);
-    }
     let vs_src = include_str!("shaders/vertex.glsl");
     let fs_src = include_str!("shaders/fragment.glsl");
 
@@ -140,7 +94,13 @@ fn main() -> Result<(), String> {
 
     let aspect = width as f32 / height as f32;
     let fov = std::f32::consts::PI / 4.0;
-    let mut camera = gfx::camera::new(0.0, 0.0, -20.0, aspect, fov);
+    let mut camera = gfx::camera::new(0.0, 0.0, -150.0, aspect, fov);
+    //camera.phys.vel = na::Vector3::z() * 20.0;
+
+    let mut mouse = sdl_context.mouse();
+    mouse.warp_mouse_in_window(&window, width / 2, height / 2);
+    mouse.set_relative_mouse_mode(true);
+    window.set_grab(true);
 
     let axes = shapes::axes::new();
 
@@ -149,37 +109,59 @@ fn main() -> Result<(), String> {
         gl::Enable(gl::MULTISAMPLE);
     }
 
+    let mut t_factor = 32.0;
+    let mut speed_adjust = 0.0;
+
+    let delta_v = 4.0;
+    let delta_a = 0.05 * std::f32::consts::PI;
+    let delta_m = 0.001 * std::f32::consts::PI;
+    let delta_b = 0.2;
+    let delta_g = 0.25;
+
     'main: loop {
         let now = timer.ticks();
         let delta = now - tick;
         tick = now;
 
-        let delta_v = 4.0;
-        let delta_a = 0.05 * std::f32::consts::PI;
 
         let (dir_x, dir_y, dir_z,) = camera.phys.direction();
 
+        for event in input::handle_events(&mut events).iter() {
+            match event {
+                input::Action::Quit => break 'main,
 
-        match input::handle_events(&mut events) {
-            input::Action::Quit => break 'main,
+                input::Action::PanUp => camera.phys.ang += na::Vector3::x() * -delta_a,
+                input::Action::PanDown => camera.phys.ang += na::Vector3::x() * delta_a,
+                input::Action::PanLeft => camera.phys.ang += na::Vector3::y() * delta_a,
+                input::Action::PanRight => camera.phys.ang += na::Vector3::y() * -delta_a,
+                input::Action::YawLeft => camera.phys.ang += na::Vector3::z() * -delta_a,
+                input::Action::YawRight => camera.phys.ang += na::Vector3::z() * delta_a,
 
-            input::Action::PanUp => camera.phys.ang += na::Vector3::x() * -delta_a,
-            input::Action::PanDown => camera.phys.ang += na::Vector3::x() * delta_a,
-            input::Action::PanLeft => camera.phys.ang += na::Vector3::y() * delta_a,
-            input::Action::PanRight => camera.phys.ang += na::Vector3::y() * -delta_a,
-            input::Action::YawLeft => camera.phys.ang += na::Vector3::z() * -delta_a,
-            input::Action::YawRight => camera.phys.ang += na::Vector3::z() * delta_a,
+                input::Action::Forward => camera.phys.vel += dir_z * delta_v,
+                input::Action::Backward => camera.phys.vel += dir_z * -delta_v,
+                input::Action::Left => camera.phys.vel += dir_x * delta_v,
+                input::Action::Right => camera.phys.vel += dir_x * -delta_v,
 
-            input::Action::Forward => camera.phys.vel += dir_z * delta_v,
-            input::Action::Backward => camera.phys.vel += dir_z * -delta_v,
-            input::Action::Left => camera.phys.vel += dir_x * delta_v,
-            input::Action::Right => camera.phys.vel += dir_x * -delta_v,
+                input::Action::TimeFaster => t_factor *= 2.0,
+                input::Action::TimeSlower => t_factor /= 2.0,
 
-            input::Action::Stop => {
-                camera.phys.vel = na::Vector3::zeros();
-                camera.phys.ang = na::Vector3::zeros();
-            },
-            _ => {
+                input::Action::BoxFaster => speed_adjust += 1.0,
+                input::Action::BoxSlower => speed_adjust -= 1.0,
+
+                input::Action::Stop => {
+                    camera.phys.vel = na::Vector3::zeros();
+                    camera.phys.ang = na::Vector3::zeros();
+                },
+
+                input::Action::MouseMotion {dx, dy, ..} => {
+                    camera.phys.rot *= na::Rotation3::new(na::Vector3::new(
+                        *dy as f32 * delta_m,
+                        -dx as f32 * delta_m,
+                        0.0,
+                    ));
+                },
+
+                _ => {}
 
             }
         }
@@ -188,7 +170,7 @@ fn main() -> Result<(), String> {
             gl::ClearColor(0.05, 0.05, 0.1, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
-            let clock = delta as f32 / 1000.0;
+            let clock = (delta as f32 / 1000.0);
 
             camera.phys.move_(clock);
 
@@ -202,18 +184,81 @@ fn main() -> Result<(), String> {
 
             //axes.render(&params);
 
-            let mut centroid: na::Vector3<f32> = na::Vector3::zeros();
+            let mut centroid0: na::Vector3<f32> = na::Vector3::zeros();
+            let mut centroid1: na::Vector3<f32> = na::Vector3::zeros();
+            let mut centroid2: na::Vector3<f32> = na::Vector3::zeros();
+
+            let mut n0 = 0.0;
+            let mut n1 = 0.0;
+            let mut n2 = 0.0;
+
             for mut c in cubes.iter() {
-                centroid += c.phys.pos;
+                if c.id == 0 {
+                    centroid0 += c.phys.pos;
+                    n0 += 1.0;
+                } else if c.id == 1 {
+                    centroid1 += c.phys.pos;
+                    n1 += 1.0;
+                } else if c.id == 2 {
+                    centroid2 += c.phys.pos;
+                    n2 += 1.0;
+                }
             }
-            centroid /= cubes.len() as f32;
+            centroid0 /= n0;
+            centroid1 /= n1;
+            centroid2 /= n2;
+
+            let amt = 20.0;
+
+            let pi = 2.0 * std::f32::consts::FRAC_PI_3;
+            let adj = |i: i32| {
+                let r = (tick as f32 * 0.000005 * t_factor) + (pi * i as f32);
+                na::Vector3::new(
+                    r.sin() * amt,
+                    r.cos() * amt,
+                    0.0,
+                )
+            };
 
             for mut c in cubes.iter_mut() {
-                c.phys.vel += (centroid - c.phys.pos) * _rng.gen_range(0.0005, 0.001);
-                c.phys.move_(clock);
+                //let n = c.phys.pos + c.phys.vel;
+                //let rot = na::Matrix4::from(na::Rotation3::rotation_between(&c.phys.pos, &centroid).unwrap());
+                //let correction = na::Vector3::from_homogeneous(rot * c.phys.vel.to_homogeneous()).unwrap();
+                //c.phys.vel += correction * 0.001;
+
+                let mut adjust = na::Vector3::<f32>::zeros();
+                let mut center = na::Vector3::<f32>::zeros();
+
+                if c.id == 0 {
+                    center = centroid0;
+                }
+                if c.id == 1 {
+                    center = centroid1;
+                }
+                if c.id == 2 {
+                    center = centroid2;
+                }
+
+                let adjust = adj(c.id);
+
+                //let d = adjust - c.phys.pos;
+                let mut b = (adjust - center) * 0.5;
+                let mut d = center - c.phys.pos + b;
+                let mut m = d.magnitude() as f32;
+                if (m < 5.0) { m = 5.0 };
+                let mut a = d * delta_g * 1.0 / (m * m);
+                c.phys.vel += a * clock * t_factor;
+
+                c.phys.vel -= c.phys.vel * speed_adjust * delta_b;
+
+                c.phys.move_(clock * t_factor);
                 c.render(&params);
             }
+            //axes.render(&params);
         }
+
+
+        speed_adjust = 0.0;
 
         window.gl_swap_window();
     }

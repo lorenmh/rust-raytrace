@@ -1,11 +1,12 @@
 use nalgebra as na;
 
 pub struct Cube {
+    pub id: i32,
     pub phys: crate::physics::Physics,
     pub gfx: crate::gfx::render::Renderer,
 }
 
-pub fn new(x: f32, y: f32, z: f32, width: f32, height: f32, depth: f32, color: crate::gfx::ColorFn) -> Cube {
+pub fn new(id: i32, x: f32, y: f32, z: f32, width: f32, height: f32, depth: f32, color: crate::gfx::ColorFn) -> Cube {
     let mut front = crate::shapes::rectangle::new(
         0.0,
         0.0,
@@ -73,6 +74,7 @@ pub fn new(x: f32, y: f32, z: f32, width: f32, height: f32, depth: f32, color: c
     mesh.extend(bottom.vertices());
 
     Cube{
+        id,
         phys: crate::physics::new(x, y, z),
         gfx: crate::gfx::render::new(
             1.0,

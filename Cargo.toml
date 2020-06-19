@@ -9,6 +9,8 @@ build = "build.rs"
 rand = "0.7.3"
 gl = "0.14.0"
 nalgebra = "0.21.0"
+ncollide3d = "0.22"
+nphysics3d = "0.14"
 
 [dependencies.sdl2]
 version = "0.34.0"
