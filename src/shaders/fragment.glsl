@@ -17,7 +17,7 @@ void main() {
         d = 1.0;
     }
     float cubic = 1.0 - (d / 1.3) * (d / 1.3);
-    FragColor = vec4((color * cubic * 0.7) + (color * 0.3), 1.0);
+    FragColor = vec4((color * cubic * 0.6) + (color * 0.4), 1.0);
     //FragColor = vec4(color, 1.0);
 
    //FragColor = vec4(normalize(color+ light), 1.0);

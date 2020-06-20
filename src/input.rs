@@ -20,6 +20,7 @@ pub enum Action {
     MouseMotion{x: i32, y: i32, dx: i32, dy: i32},
     TimeFaster,
     TimeSlower,
+    TimeStop,
     BoxFaster,
     BoxSlower,
 }
@@ -51,13 +52,14 @@ pub fn handle_events(events: &mut sdl2::EventPump) -> Events {
                     Keycode::Up => Action::PanUp,
                     Keycode::Right => Action::PanRight,
                     Keycode::Left => Action::PanLeft,
-                    Keycode::Space => Action::Stop,
+                    Keycode::LShift => Action::Stop,
 
                     Keycode::Q => Action::YawLeft,
                     Keycode::E => Action::YawRight,
 
                     Keycode::RightBracket => Action::TimeFaster,
                     Keycode::LeftBracket => Action::TimeSlower,
+                    Keycode::Space => Action::TimeStop,
                     Keycode::Semicolon => Action::BoxFaster,
                     Keycode::Quote => Action::BoxSlower,
 

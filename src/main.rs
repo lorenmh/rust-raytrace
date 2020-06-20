@@ -64,11 +64,11 @@ fn main() -> Result<(), String> {
                 c,
             );
 
-            //c.phys.vel += na::Vector3::new(
-            //    _rng.gen_range(-1.0, 1.0),
-            //    _rng.gen_range(-1.0,1.0),
-            //    _rng.gen_range(-1.0,1.0),
-            //);
+            c.phys.vel += na::Vector3::new(
+                _rng.gen_range(-1.0, 1.0),
+                _rng.gen_range(-1.0,1.0),
+                _rng.gen_range(-1.0,1.0),
+            );
             c.phys.ang = na::Vector3::new(
                 _rng.gen_range(-0.5, 0.5),
                 _rng.gen_range(-0.5, 0.5),
@@ -118,10 +118,16 @@ fn main() -> Result<(), String> {
     let delta_b = 0.2;
     let delta_g = 0.25;
 
+    let mut t = 0.0;
+
+    let mut t_save = 1.0;
+
     'main: loop {
         let now = timer.ticks();
         let delta = now - tick;
         tick = now;
+
+        t += (delta as f32 / 100000.0) * t_factor;
 
 
         let (dir_x, dir_y, dir_z,) = camera.phys.direction();
@@ -142,7 +148,9 @@ fn main() -> Result<(), String> {
                 input::Action::Left => camera.phys.vel += dir_x * delta_v,
                 input::Action::Right => camera.phys.vel += dir_x * -delta_v,
 
-                input::Action::TimeFaster => t_factor *= 2.0,
+                input::Action::TimeFaster => {
+                    t_factor = if (t_factor == 0.0) { 1.0 } else { t_factor * 2.0 };
+                },
                 input::Action::TimeSlower => t_factor /= 2.0,
 
                 input::Action::BoxFaster => speed_adjust += 1.0,
@@ -151,6 +159,17 @@ fn main() -> Result<(), String> {
                 input::Action::Stop => {
                     camera.phys.vel = na::Vector3::zeros();
                     camera.phys.ang = na::Vector3::zeros();
+                },
+
+                input::Action::TimeStop => {
+                    if (t_factor == 0.0) {
+                        t_factor = t_save;
+                    } else {
+                        camera.phys.vel = na::Vector3::zeros();
+                        camera.phys.ang = na::Vector3::zeros();
+                        t_save = t_factor;
+                        t_factor = 0.0;
+                    }
                 },
 
                 input::Action::MouseMotion {dx, dy, ..} => {
@@ -168,6 +187,7 @@ fn main() -> Result<(), String> {
 
         unsafe {
             gl::ClearColor(0.05, 0.05, 0.1, 1.0);
+            //gl::ClearColor(1.0, 1.0, 1.0, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
             let clock = (delta as f32 / 1000.0);
@@ -212,13 +232,14 @@ fn main() -> Result<(), String> {
 
             let pi = 2.0 * std::f32::consts::FRAC_PI_3;
             let adj = |i: i32| {
-                let r = (tick as f32 * 0.000005 * t_factor) + (pi * i as f32);
+                let r = ((t * 0.5) + (pi * i as f32));
                 na::Vector3::new(
                     r.sin() * amt,
                     r.cos() * amt,
                     0.0,
                 )
             };
+            println!("{}", t);
 
             for mut c in cubes.iter_mut() {
                 //let n = c.phys.pos + c.phys.vel;
