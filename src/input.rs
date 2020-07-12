@@ -23,6 +23,8 @@ pub enum Action {
     TimeStop,
     BoxFaster,
     BoxSlower,
+
+    ShowAxes,
 }
 
 pub type Events = std::vec::Vec<Action>;
@@ -62,6 +64,8 @@ pub fn handle_events(events: &mut sdl2::EventPump) -> Events {
                     Keycode::Space => Action::TimeStop,
                     Keycode::Semicolon => Action::BoxFaster,
                     Keycode::Quote => Action::BoxSlower,
+
+                    Keycode::Z => Action::ShowAxes,
 
 
                     _ => Action::Continue,

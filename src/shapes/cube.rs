@@ -1,83 +1,49 @@
 use nalgebra as na;
 
+use nphysics3d::object::{BodyDesc, ColliderDesc, RigidBodyDesc, BodyPartHandle};
+use ncollide3d::shape::{Cuboid, ShapeHandle};
+use ncollide3d::transformation::ToTriMesh;
+
 pub struct Cube {
-    pub id: i32,
-    pub phys: crate::physics::Physics,
+    pub body: BodyDesc<f32>,
+    pub collider: ColliderDesc<f32>,
+    pub shape: ShapeHandle<f32>,
     pub gfx: crate::gfx::render::Renderer,
 }
 
-pub fn new(id: i32, x: f32, y: f32, z: f32, width: f32, height: f32, depth: f32, color: crate::gfx::ColorFn) -> Cube {
-    let mut front = crate::shapes::rectangle::new(
-        0.0,
-        0.0,
-        depth / 2.0,
-        width,
-        height,
-        color,
+pub fn new(
+    env: &mut crate::shapes::Environment,
+    x: f32, y: f32, z: f32,
+    width: f32, height: f32, depth: f32,
+    color: crate::gfx::ColorFn
+) -> Cube {
+    let mut body = (
+        RigidBodyDesc::<f32>::new()
+            .translation(na::Vector3::new(x, y, z))
+            .build()
     );
 
-    let mut back = crate::shapes::rectangle::new(
-        0.0,
-        0.0,
-        -depth / 2.0,
-        width,
-        height,
-        color,
+    let body_handle = env.bodies.insert(body);
+
+    let cuboid = Cuboid::<f32>::new(
+        na::Vector3::new(width/2.0, height/2.0, depth/2.0)
     );
 
-    let mut left = crate::shapes::rectangle::new(
-        -width / 2.0,
-        0.0,
-        0.0,
-        depth,
-        height,
-        color,
+    let shape = ShapeHandle::<f32>::new(cuboid);
+
+    let mut collider = (
+        ColliderDesc::<f32>::new(shape)
+            .density(1.0)
+            .build(BodyPartHandle(body_handle, 0))
     );
-    left.phys.rot = na::Rotation3::new(na::Vector3::y() * std::f32::consts::FRAC_PI_2);
 
-    let mut right = crate::shapes::rectangle::new(
-        width / 2.0,
-        0.0,
-        0.0,
-        depth,
-        height,
-        color,
-    );
-    right.phys.rot = na::Rotation3::new(na::Vector3::y() * -std::f32::consts::FRAC_PI_2);
+    env.colliders.insert(collider);
 
-    let mut top = crate::shapes::rectangle::new(
-        0.0,
-        height / 2.0,
-        0.0,
-        width,
-        depth,
-        color,
-    );
-    top.phys.rot = na::Rotation3::new(na::Vector3::x() * std::f32::consts::FRAC_PI_2);
-
-    let mut bottom = crate::shapes::rectangle::new(
-        0.0,
-        -height / 2.0,
-        0.0,
-        width,
-        depth,
-        color,
-    );
-    bottom.phys.rot = na::Rotation3::new(na::Vector3::x() * -std::f32::consts::FRAC_PI_2);
-
-
-    let mut mesh: std::vec::Vec<crate::gfx::Triangle> = front.vertices();
-    mesh.extend(back.vertices());
-    mesh.extend(left.vertices());
-    mesh.extend(right.vertices());
-    mesh.extend(top.vertices());
-    mesh.extend(bottom.vertices());
+    let mesh = cuboid.to_trimesh();
 
     Cube{
-        id,
-        phys: crate::physics::new(x, y, z),
+        body, collider, shape,
         gfx: crate::gfx::render::new(
-            1.0,
             mesh,
             color,
         ),

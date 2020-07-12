@@ -8,7 +8,6 @@ use std::convert::TryFrom;
 use nalgebra as na;
 
 mod gfx;
-mod physics;
 mod input;
 mod shapes;
 
@@ -19,6 +18,25 @@ const WIDTH: i16 = 800;
 const HEIGHT: i16 = 600;
 
 fn main() -> Result<(), String> {
+    let test: std::vec::Vec<GLuint> = vec![
+        0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
+        0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
+        0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
+        0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
+        0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
+        0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
+        0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
+        0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
+        0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
+        0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
+        0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
+        0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
+        0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
+        0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
+        0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
+        0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
+    ];
+
     let sdl_context = sdl2::init()?;
 
     let video_subsys = sdl_context.video()?;
@@ -45,13 +63,8 @@ fn main() -> Result<(), String> {
 
     let mut _rng = rand::thread_rng();
 
-    let red: fn(i32) -> gfx::Color = |i| { if (i % 2) == 0 { [1.0, 0.2, 0.2] } else { [1.0, 0.4, 0.4] } };
-    let green: fn(i32) -> gfx::Color = |i| { if (i % 2) == 0 { [0.3, 0.9, 0.4] } else { [0.5, 1.0, 0.6] } };
-    let blue: fn(i32) -> gfx::Color = |i| { if (i % 2) == 0 { [0.0, 0.89, 0.91] } else { [0.2, 1.0, 1.0] } };
-
     let mut cubes: std::vec::Vec<shapes::cube::Cube> = vec![];
     for i in 0..3 {
-        let c = if (i == 0) { red } else if (i == 1) { green } else { blue };
         for _ in 1..100 {
             let mut c = shapes::cube::new(
                 i,
@@ -61,18 +74,7 @@ fn main() -> Result<(), String> {
                 _rng.gen_range(0.30, 1.5),
                 _rng.gen_range(0.30, 1.5),
                 _rng.gen_range(0.30, 1.5),
-                c,
-            );
-
-            c.phys.vel += na::Vector3::new(
-                _rng.gen_range(-1.0, 1.0),
-                _rng.gen_range(-1.0,1.0),
-                _rng.gen_range(-1.0,1.0),
-            );
-            c.phys.ang = na::Vector3::new(
-                _rng.gen_range(-0.5, 0.5),
-                _rng.gen_range(-0.5, 0.5),
-                _rng.gen_range(-0.5, 0.5),
+                |i| { [1.0,0.0,0.0] },
             );
 
             cubes.push(c);
@@ -107,12 +109,13 @@ fn main() -> Result<(), String> {
     unsafe {
         gl::Enable(gl::DEPTH_TEST);
         gl::Enable(gl::MULTISAMPLE);
+
     }
 
     let mut t_factor = 32.0;
     let mut speed_adjust = 0.0;
 
-    let delta_v = 4.0;
+    let delta_v = 20.0;
     let delta_a = 0.05 * std::f32::consts::PI;
     let delta_m = 0.001 * std::f32::consts::PI;
     let delta_b = 0.2;
@@ -121,6 +124,7 @@ fn main() -> Result<(), String> {
     let mut t = 0.0;
 
     let mut t_save = 1.0;
+    let mut show_axes = false;
 
     'main: loop {
         let now = timer.ticks();
@@ -165,8 +169,8 @@ fn main() -> Result<(), String> {
                     if (t_factor == 0.0) {
                         t_factor = t_save;
                     } else {
-                        camera.phys.vel = na::Vector3::zeros();
-                        camera.phys.ang = na::Vector3::zeros();
+                        //camera.phys.vel = na::Vector3::zeros();
+                        //camera.phys.ang = na::Vector3::zeros();
                         t_save = t_factor;
                         t_factor = 0.0;
                     }
@@ -179,6 +183,8 @@ fn main() -> Result<(), String> {
                         0.0,
                     ));
                 },
+
+                input::Action::ShowAxes => show_axes = !show_axes,
 
                 _ => {}
 
@@ -239,7 +245,6 @@ fn main() -> Result<(), String> {
                     0.0,
                 )
             };
-            println!("{}", t);
 
             for mut c in cubes.iter_mut() {
                 //let n = c.phys.pos + c.phys.vel;
@@ -263,7 +268,7 @@ fn main() -> Result<(), String> {
                 let adjust = adj(c.id);
 
                 //let d = adjust - c.phys.pos;
-                let mut b = (adjust - center) * 0.5;
+                let mut b = (adjust - center) * 1.0;
                 let mut d = center - c.phys.pos + b;
                 let mut m = d.magnitude() as f32;
                 if (m < 5.0) { m = 5.0 };
@@ -275,9 +280,24 @@ fn main() -> Result<(), String> {
                 c.phys.move_(clock * t_factor);
                 c.render(&params);
             }
-            //axes.render(&params);
+
+            if show_axes {
+                axes.render(&params);
+            }
+
+            let mut fbo: GLuint = 0;
+            gl::GenFramebuffers(1, &mut fbo);
+            gl::BindFramebuffer(gl::FRAMEBUFFER, fbo);
+            gl::TexImage2D(gl::TEXTURE_2D, 0, gl::R8 as GLint, 16, 16, 0, gl::RED, gl::UNSIGNED_BYTE, std::ptr::null());
+            gl::TexSubImage2D(gl::TEXTURE_2D, 0, 0, 0, 16, 16, gl::RED, gl::UNSIGNED_BYTE, std::mem::transmute(&test[0]));
+
+            gl::BindFramebuffer(gl::DRAW_FRAMEBUFFER, 0);
+            //gl::BlitFramebuffer(0, 0, 16, 16, 0, 0, 16, 16, )
+            //gl::Flush();
         }
 
+        //gl::RasterPos2i(20, 20);
+        //gl::Bitmap(16, 16, 0.0, 0.0, 0.0, 0.0, std::mem::transmute(&test[0]));
 
         speed_adjust = 0.0;
 
