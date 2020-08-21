@@ -239,7 +239,6 @@ fn main() -> Result<(), String> {
                     0.0,
                 )
             };
-            println!("{}", t);
 
             for mut c in cubes.iter_mut() {
                 //let n = c.phys.pos + c.phys.vel;

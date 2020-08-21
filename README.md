@@ -1,6 +1,15 @@
 # rust-raytrace
 Playground for Rust; hoping to build out something graphical, perhaps a ray tracer
 
+## To Do
+1. Use the physics objects from nphysics / ncollider (etc)
+1. Clean up warnings, better error handling
+1. Materials + Meshes
+1. render something with textures
+1. box 2d or equiv
+1. entity component system
+1. fix camera handling (passing around transform right now)
+
 ## cleanup warnings
 
 ## How
@@ -24,14 +33,6 @@ Ideas so far:
 * some kind of "train track utilitarian" game, where there's a runaway train and the user quickly change tracks before the train crashes or collides with pedestrians; a "frogger" if you will, except we're the train operator, not the frogs.
 
 ## Notes
-
-## To Do
-1. Clean up warnings, better error handling
-1. Materials + Meshes
-1. render something with textures
-1. box 2d or equiv
-1. entity component system
-1. fix camera handling (passing around transform right now)
 
 ## Links
 * [The Rust Book](https://doc.rust-lang.org/book/)
