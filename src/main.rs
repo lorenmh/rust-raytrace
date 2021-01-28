@@ -52,15 +52,15 @@ fn main() -> Result<(), String> {
     let mut cubes: std::vec::Vec<shapes::cube::Cube> = vec![];
     for i in 0..3 {
         let c = if (i == 0) { red } else if (i == 1) { green } else { blue };
-        for _ in 1..100 {
+        for _ in 1..300 {
             let mut c = shapes::cube::new(
                 i,
                 _rng.gen_range(-50.0, 50.0),
                 _rng.gen_range(-50.0, 50.0),
                 _rng.gen_range(-50.0, 50.0),
-                _rng.gen_range(0.30, 1.5),
-                _rng.gen_range(0.30, 1.5),
-                _rng.gen_range(0.30, 1.5),
+                _rng.gen_range(0.60, 4.5),
+                _rng.gen_range(0.60, 4.5),
+                _rng.gen_range(0.60, 4.5),
                 c,
             );
 
@@ -165,19 +165,19 @@ fn main() -> Result<(), String> {
                     if (t_factor == 0.0) {
                         t_factor = t_save;
                     } else {
-                        camera.phys.vel = na::Vector3::zeros();
-                        camera.phys.ang = na::Vector3::zeros();
+                        //camera.phys.vel = na::Vector3::zeros();
+                        //camera.phys.ang = na::Vector3::zeros();
                         t_save = t_factor;
                         t_factor = 0.0;
                     }
                 },
 
                 input::Action::MouseMotion {dx, dy, ..} => {
-                    camera.phys.rot *= na::Rotation3::new(na::Vector3::new(
+                    camera.phys.rot += na::Vector3::new(
                         *dy as f32 * delta_m,
                         -dx as f32 * delta_m,
                         0.0,
-                    ));
+                    );
                 },
 
                 _ => {}

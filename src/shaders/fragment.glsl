@@ -9,7 +9,7 @@ in vec4 gl_FragCoord;
 uniform float clock;
 
 void main() {
-    float m = 15.0;
+    float m = 50.0;
     float d;
     if (distance < m) {
         d = distance / m;

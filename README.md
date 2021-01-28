@@ -2,11 +2,13 @@
 Playground for Rust; hoping to build out something graphical, perhaps a ray tracer
 
 ## To Do
-1. Use the physics objects from nphysics / ncollider (etc)
+1. Use the physics objects from nphysics / ncollider
 1. Clean up warnings, better error handling
 1. Materials + Meshes
+  - Ie, complex shapes
+1. Shading
+  - simple shading
 1. render something with textures
-1. box 2d or equiv
 1. entity component system
 1. fix camera handling (passing around transform right now)
 
@@ -15,9 +17,9 @@ Playground for Rust; hoping to build out something graphical, perhaps a ray trac
 ## How
 * SDL2 via the `sdl2` crate will provide window / OS independent media layer.
   - provides key input, windows, openGL context, etc
-* use 
   
 ## What
+cross platform app of some kind
 ### raytracer
 Only requires `sdl2`. Would be a fun weekend project.
  

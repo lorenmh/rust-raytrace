@@ -43,7 +43,7 @@ fn translate_mesh(&mat: &na::Matrix4<f32>, triangle: &crate::gfx::Triangle) -> c
 impl Rectangle {
     pub fn render(&mut self, params: &crate::gfx::render::Params) { self.gfx.render(&self.phys, params).expect("err rendering") }
     pub fn vertices(&self) -> std::vec::Vec<crate::gfx::Triangle> {
-        let mat = self.phys.mat_model();
+        let mat = self.phys.mat_model().to_homogeneous();
         return self.gfx.mesh.iter().map(|t| translate_mesh(&mat, &t)).rev().collect();
     }
 }

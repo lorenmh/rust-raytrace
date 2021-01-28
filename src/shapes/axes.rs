@@ -32,7 +32,7 @@ pub fn new() -> Axes {
         1000.0,
         |i| { [0.0, 0.0, 1.0] },
     );
-    z.phys.rot = na::Rotation3::new(na::Vector3::x() * -std::f32::consts::FRAC_PI_2);
+    z.phys.rot = na::Vector3::x() * -std::f32::consts::FRAC_PI_2;
 
     let mut mesh: std::vec::Vec<crate::gfx::Triangle> = x.vertices();
     mesh.extend(y.vertices());
